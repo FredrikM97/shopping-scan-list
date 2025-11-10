@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { property } from 'lit/decorators.js';
 import { translate } from '../translations/translations.js';
-import '../components/action-button.js';
+import './action-button.js';
 
 /**
  * <actions-renderer>

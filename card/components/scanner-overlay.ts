@@ -1,7 +1,7 @@
 import { loadHaComponents } from '@kipk/load-ha-components';
 import { LitElement, html, css } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { BarcodeScanner } from '../services/barcode-scanner';
+import { BarcodeScanner } from '../services/barcode-service';
 
 /**
  * <scanner-overlay>

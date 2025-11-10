@@ -5,14 +5,14 @@ import './barcode-card-editor';
  */
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { ProductLookup } from './services/product-lookup';
-import { ShoppingListService } from './services/shopping-list-service';
-import './sections/actions-section';
-import './sections/quick-chips-panel';
+import { ProductLookup } from './services/product-service';
+import { ShoppingListService } from './services/item-service';
+import './components/actions-panel';
+import './components/quick-chips-panel';
 import './components/scanner-overlay';
-import './sections/add-item-panel';
-import { AddItemPanel } from './sections/add-item-panel';
-import './components/shopping-list';
+import './components/add-item-panel';
+import { AddItemPanel } from './components/add-item-panel';
+import './components/shopping-list-overlay';
 import type { BarcodeCardConfig, Product } from './types';
 
 @customElement('barcode-card')

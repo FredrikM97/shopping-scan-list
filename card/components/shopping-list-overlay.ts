@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { translate } from '../translations/translations.js';
-import { ShoppingListItem } from '../types';
+import { ShoppingListItem } from '../types.js';
 
 /**
  * <shopping-list>
