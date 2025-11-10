@@ -40,7 +40,7 @@ fi
 
 # Function to check if Home Assistant is running
 check_hass_running() {
-    curl -s -f http://localhost:8123 > /dev/null 2>&1
+    curl -s -f http://localhost:8124 > /dev/null 2>&1
 }
 
 # Function to wait for Home Assistant to start
@@ -171,7 +171,7 @@ if [ "$USE_DOCKER" = true ]; then
         --restart=unless-stopped \
         -e TZ=UTC \
         -v $(pwd)/config:/config \
-        -p 8123:8123 \
+        -p 8124:8123 \
         ghcr.io/home-assistant/home-assistant:stable
     
     HASS_PID=$(docker ps -q --filter "name=homeassistant-dev")
@@ -194,7 +194,7 @@ if wait_for_hass; then
     echo ""
     echo "🎉 Setup Complete!"
     echo "================================"
-    echo "🌐 Home Assistant: http://localhost:8123"
+    echo "🌐 Home Assistant: http://localhost:8124"
     echo "📁 Card location: ./config/www/barcode-card.js"
     echo "� The Barcode Card is pre-configured on the dashboard!"
     echo ""
@@ -215,7 +215,7 @@ if wait_for_hass; then
     echo "title: Shopping List Barcode"
     echo "enable_camera: true"
     echo ""
-    echo "💡 The card should be visible immediately at http://localhost:8123"
+    echo "💡 The card should be visible immediately at http://localhost:8124"
 else
     echo "❌ Failed to start Home Assistant. Check ./config/hass.log for errors."
     exit 1

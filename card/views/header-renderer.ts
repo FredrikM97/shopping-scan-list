@@ -2,6 +2,7 @@
  * Header Renderer
  * Handles the card header rendering
  */
+import { css } from 'lit';
 import { translate } from '../translations/translations.js';
 
 export class HeaderRenderer {
@@ -21,7 +22,7 @@ export class HeaderRenderer {
     }
 
     getStyles() {
-        return `
+        return css`
             .card-header {
                 display: flex;
                 align-items: center;

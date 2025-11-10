@@ -9,6 +9,7 @@ import type { BarcodeCardConfig } from '../types.js';
 import { ShoppingListRenderer } from './shopping-list-renderer';
 import { QuickChipsRenderer } from './quick-chips-renderer';
 import { ScannerRenderer } from './scanner-renderer';
+import { css } from 'lit';
 
 class UIManager {
     // Attach card event listeners to shadowRoot
@@ -128,8 +129,8 @@ class UIManager {
         return this.quickChipsRenderer.render();
     }
 
-    private _getStyles(): string {
-        return `
+    private _getStyles() {
+        return css`
             <style>
                 .card-container {
                     background: var(--card-background-color, #fff);

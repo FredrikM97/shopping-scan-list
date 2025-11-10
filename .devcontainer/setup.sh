@@ -32,7 +32,7 @@ frontend:
 # HTTP configuration for development
 http:
   server_host: 0.0.0.0
-  server_port: 8123
+  server_port: 8124
   cors_allowed_origins:
     - http://localhost:3000
     - http://localhost:5173
@@ -61,7 +61,7 @@ mkdir -p ./config/themes
 cat > ./config/start-hass.sh << 'EOF'
 #!/bin/bash
 echo "Starting Home Assistant for development..."
-echo "Home Assistant will be available at: http://localhost:8123"
+echo "Home Assistant will be available at: http://localhost:8124"
 echo "Make sure to copy your built card to ./config/www/barcode-card.js"
 echo ""
 cd "$(dirname "$0")/../config"
@@ -81,7 +81,7 @@ echo "  - npm run lint         # Lint TypeScript code"
 echo "  - npm run lint:fix     # Lint and auto-fix TypeScript code"
 echo ""
 echo "Home Assistant testing:"
-echo "  - ./config/start-hass.sh          # Start Home Assistant (http://localhost:8123)"
+echo "  - ./config/start-hass.sh          # Start Home Assistant (http://localhost:8124)"
 echo "  - npm run build:hass              # Build and copy card to Home Assistant"
 echo ""
 echo "Development workflow:"
