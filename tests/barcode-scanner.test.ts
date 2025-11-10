@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { BarcodeScanner } from '../card/utils/barcode-scanner';
+import { BarcodeScanner } from '../card/services/barcode-scanner';
 
 describe('BarcodeScanner', () => {
   it('should instantiate', () => {

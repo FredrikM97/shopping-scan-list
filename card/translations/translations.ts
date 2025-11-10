@@ -10,8 +10,12 @@ export function setLanguage(lang: string) {
 }
 
 export function translate(key: string, vars?: Record<string, any>): string {
-  let str = translations[currentLang]?.[key] || translations['en']?.[key] || key;
-  if (vars) {
+  // Support nested keys like 'quick_add.title'
+  function getNested(obj: any, path: string): any {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  }
+  let str = getNested(translations[currentLang], key) || getNested(translations['en'], key) || key;
+  if (vars && typeof str === 'string') {
     for (const [k, v] of Object.entries(vars)) {
       str = str.replace(new RegExp(`{${k}}`, 'g'), String(v));
     }

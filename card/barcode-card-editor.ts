@@ -8,11 +8,17 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { BarcodeCardConfig } from './types';
 import { loadHaComponents } from '@kipk/load-ha-components';
 
+declare global {
+  interface Window {
+    customCards?: any[];
+  }
+}
+
 @customElement('barcode-card-editor')
 export class BarcodeCardEditor extends LitElement {
     _onInput(e: Event) {
-        const target = e.target as HTMLInputElement;
         if (!this.config) return;
+        const target = e.target as HTMLInputElement;
         this.config = { ...this.config, title: target.value };
         this.dispatchEvent(new CustomEvent('config-changed', {
             detail: { config: this.config },
@@ -149,19 +155,14 @@ export class BarcodeCardEditor extends LitElement {
 
     _updateConfig() {
         if (!this.config) return;
-        const shadow = this.shadowRoot as ShadowRoot;
-        const getValue = (id: string) => {
-            const el = shadow.getElementById(id) as any;
-            if (!el) return null;
-            if (el.type === 'checkbox') return el.checked;
-            if (typeof el.value !== 'undefined') return el.value;
-            return el.value || el.textContent || '';
-        };
+        const enableCamera = (this.shadowRoot?.getElementById('enable_camera') as HTMLInputElement)?.checked ?? true;
+        const showHeaderToggle = (this.shadowRoot?.getElementById('show_header_toggle') as HTMLInputElement)?.checked ?? true;
+        const titleInput = this.shadowRoot?.getElementById('title') as HTMLInputElement;
         const newConfig: BarcodeCardConfig = {
             ...this.config,
-            title: getValue('title') as string,
-            enable_camera: getValue('enable_camera') as boolean,
-            show_header_toggle: getValue('show_header_toggle') as boolean,
+            title: titleInput?.value ?? '',
+            enable_camera: enableCamera,
+            show_header_toggle: showHeaderToggle,
         };
         this.config = newConfig;
         this.dispatchEvent(new CustomEvent('config-changed', {
@@ -182,21 +183,11 @@ export class BarcodeCardEditor extends LitElement {
     }
 }
 
-
-// Register for card picker
-declare global {
-    interface Window {
-        customCards: any[];
-    }
-}
-
-if (typeof window !== 'undefined') {
-    window.customCards = window.customCards || [];
-    window.customCards.push({
-        type: 'barcode-card',
-        name: 'Barcode Card',
-        description: 'A card for managing shopping lists with barcode scanning support',
-        preview: true,
-        documentationURL: 'https://github.com/FredrikM97/shopping-list-barcode',
-    });
-}
+window.customCards = window.customCards || [];
+window.customCards.push({
+    type: 'barcode-card',
+    name: 'Barcode Card',
+    description: 'A card for managing shopping lists with barcode scanning support',
+    preview: true,
+    documentationURL: 'https://github.com/FredrikM97/shopping-list-barcode',
+});

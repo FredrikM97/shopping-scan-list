@@ -8,6 +8,19 @@ interface ProductLookupConfig {
 }
 
 class ProductLookup {
+    async lookupBarcode(barcode, onFound, onManual) {
+        if (!barcode) return;
+        try {
+            const product = await this.getProductInfo(barcode);
+            if (product) {
+                onFound(product);
+            } else {
+                onManual(barcode);
+            }
+        } catch (e) {
+            onManual(barcode);
+        }
+    }
     cacheKey: string;
     historyKey: string;
     cacheProducts: boolean;
@@ -53,8 +66,7 @@ class ProductLookup {
     async _fetchFromOpenFoodFacts(barcode) {
         try {
             const response = await fetch(
-                `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
-                { timeout: 8000 }
+                `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
             );
 
             if (response.ok) {
@@ -81,8 +93,7 @@ class ProductLookup {
     async _fetchFromUPCItemDB(barcode) {
         try {
             const response = await fetch(
-                `https://api.upcitemdb.com/prod/trial/lookup?upc=${barcode}`,
-                { timeout: 8000 }
+                `https://api.upcitemdb.com/prod/trial/lookup?upc=${barcode}`
             );
 
             if (response.ok) {
@@ -136,25 +147,7 @@ class ProductLookup {
         }
     }
 
-    addToHistory(productName) {
-        try {
-            const history = this.getHistory();
-            const updated = [productName, ...history.filter(item => item !== productName)].slice(0, 50);
-            localStorage.setItem(this.historyKey, JSON.stringify(updated));
-        } catch (error) {
-            console.warn('Failed to save history:', error);
-        }
-    }
-
-    getHistory() {
-        try {
-            const history = localStorage.getItem(this.historyKey);
-            return history ? JSON.parse(history) : [];
-        } catch (error) {
-            console.warn('Failed to load history:', error);
-            return [];
-        }
-    }
+    // History logic removed; rely on todo list descriptions for quick add sorting
 
     clearCache() {
         this.cache.clear();

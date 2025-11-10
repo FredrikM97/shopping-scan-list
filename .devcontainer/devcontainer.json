@@ -3,7 +3,9 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/python:1": {},
-    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "latest"
+    },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
   "customizations": {
@@ -36,7 +38,6 @@
       }
     }
   },
-  "postCreateCommand": "bash .devcontainer/setup.sh",
   "forwardPorts": [3000, 8124],
   "portsAttributes": {
     "3000": {

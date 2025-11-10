@@ -18,7 +18,10 @@
   "actions": {
     "scan_barcode": "Scan Barcode",
     "add_manual": "Add Manual",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "add_product": "Add Product",
+    "groups": "Groups",
+    "lookup": "Lookup"
   },
   "product": {
     "unknown": "Unknown Product",
@@ -45,6 +48,13 @@
     "item_remove_failed": "Failed to remove item"
     ,
     "no_todo_service": "Todo integration or service not available. Enable the Home Assistant Todo integration and select a todo.* entity in the card editor."
+  },
+  "quick_add": {
+    "title": "Quick Add",
+    "subtitle": "Top 15 most added items"
+  },
+  "shopping_list": {
+    "title": "Shopping List"
   },
   "editor": {
     "placeholders": {

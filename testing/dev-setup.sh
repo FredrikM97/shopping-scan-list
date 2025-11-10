@@ -40,7 +40,7 @@ fi
 
 # Function to check if Home Assistant is running
 check_hass_running() {
-    curl -s -f http://localhost:8124 > /dev/null 2>&1
+  curl -s -f http://localhost:8124 > /dev/null 2>&1
 }
 
 # Function to wait for Home Assistant to start
@@ -103,28 +103,24 @@ cat > ./config/.storage/lovelace << 'EOF'
         {
           "title": "Shopping List Test",
           "cards": [
+            {
+              "type": "custom:barcode-card",
+              "title": "Barcode Shopping Card",
+              "entity": "todo.shopping_cart",
+              "enable_camera": true,
+              "show_header_toggle": false
+            },
+            {
+              "type": "entities",
+              "title": "Test Controls",
+              "entities": [
                 {
-                  "type": "shopping-list",
-                  "title": "Shopping List (Native)"
-                },
-                {
-                  "type": "custom:barcode-card",
-                  "title": "Barcode Shopping Card",
-                  "entity": "todo.shopping_list",
-                  "enable_camera": true,
-                  "show_header_toggle": false
-                },
-                {
-                  "type": "entities",
-                  "title": "Test Controls",
-                  "entities": [
-                    {
-                      "entity": "todo.shopping_list",
-                      "name": "Shopping List Entity"
-                    }
-                  ]
+                  "entity": "todo.shopping_cart",
+                  "name": "Shopping List Entity"
                 }
               ]
+            }
+          ]
         }
       ]
     }
@@ -149,7 +145,7 @@ EOF
 cat > ./config/.storage/todo << 'EOF'
 {
   "version": 1,
-  "key": "todo.shopping_list",
+  "key": "todo.shopping_cart",
   "data": {
     "items": [
       { "id": "t1", "name": "Milk", "complete": false },
@@ -165,13 +161,13 @@ echo "🚀 Starting Home Assistant..."
 if [ "$USE_DOCKER" = true ]; then
     # Use Docker container (includes Python 3.12)
     echo "📦 Starting Home Assistant Docker container..."
-    docker run -d \
+  docker run -d \
         --name homeassistant-dev \
         --privileged \
         --restart=unless-stopped \
         -e TZ=UTC \
         -v $(pwd)/config:/config \
-        -p 8124:8123 \
+    -p 8124:8123 \
         ghcr.io/home-assistant/home-assistant:stable
     
     HASS_PID=$(docker ps -q --filter "name=homeassistant-dev")
@@ -190,11 +186,11 @@ else
 fi
 
 # Wait for Home Assistant to start
-if wait_for_hass; then
+  if wait_for_hass; then
     echo ""
     echo "🎉 Setup Complete!"
     echo "================================"
-    echo "🌐 Home Assistant: http://localhost:8124"
+  echo "🌐 Home Assistant: http://localhost:8124"
     echo "📁 Card location: ./config/www/barcode-card.js"
     echo "� The Barcode Card is pre-configured on the dashboard!"
     echo ""
@@ -215,7 +211,7 @@ if wait_for_hass; then
     echo "title: Shopping List Barcode"
     echo "enable_camera: true"
     echo ""
-    echo "💡 The card should be visible immediately at http://localhost:8124"
+  echo "💡 The card should be visible immediately at http://localhost:8124"
 else
     echo "❌ Failed to start Home Assistant. Check ./config/hass.log for errors."
     exit 1

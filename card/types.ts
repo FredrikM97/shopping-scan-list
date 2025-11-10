@@ -13,7 +13,6 @@ export interface BarcodeCardConfig extends LovelaceCardConfig {
     enable_camera: boolean;
     cache_products: boolean;
     show_completed: boolean;
-    auto_add: boolean;
 }
 
 export interface Product {
