@@ -1,127 +1,145 @@
+
 import { loadHaComponents } from "@kipk/load-ha-components";
 import { LitElement, html, css } from "lit";
-import { property, query, state } from "lit/decorators.js";
-import { BarcodeScanner } from "../services/barcode-service";
+import { property, state } from "lit/decorators.js";
+import { fireEvent } from "../common";
 
-/**
- * <scanner-overlay>
- * Displays the barcode scanner video and controls
- */
-export class ScannerOverlay extends LitElement {
-  @property({ type: Boolean }) private active = false;
-  @property({ type: Object }) private scanner: BarcodeScanner = null;
+// Add type definition if not available in DOM lib
+declare global {
+  interface Window {
+    BarcodeDetector?: typeof BarcodeDetector;
+  }
 
+  class BarcodeDetector {
+    constructor(options?: { formats?: string[] });
+    detect(source: ImageBitmapSource): Promise<Array<{
+      boundingBox: DOMRectReadOnly;
+      rawValue: string;
+      format: string;
+      cornerPoints: Array<{ x: number; y: number }>;
+    }>>;
+    static getSupportedFormats(): Promise<string[]>;
+  }
+}
+
+export class BarcodeScannerDialog extends LitElement {
   static styles = css`
-    .scanner-controls {
-      margin-top: 20px;
-      display: flex;
-      gap: 16px;
+    ha-dialog {
+      --dialog-max-width: 480px;
     }
-    .scanner-dialog-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+    video {
       width: 100%;
-      height: 100%;
-      box-sizing: border-box;
-      padding: 0;
-    }
-    .scanner-video {
-      width: 100%;
-      height: 100%;
-      max-width: 640px;
-      max-height: 480px;
       border-radius: 8px;
-      background: #222;
-      margin-bottom: 20px;
-      object-fit: contain;
-      display: block;
     }
-    .close-btn {
-      background: #fff;
-      color: #333;
-      border: none;
-      border-radius: 50%;
-      padding: 12px;
-      font-size: 18px;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    p {
+      font-size: 1.1em;
+      text-align: center;
+      margin-top: 8px;
     }
   `;
 
-  constructor() {
-    super();
-    this.scanner = new BarcodeScanner();
-  }
-  async connectedCallback() {
-    super.connectedCallback();
-    await loadHaComponents(["ha-dialog"]);
-    window.addEventListener("enable-scanner", this._handleEnableScanner);
-    console.log("[ScannerOverlay] connectedCallback");
+  @property({ type: Object }) hass?: any;
+  @property({ type: Object }) barcode?: any;
+  @property({ type: Object }) format?: any;
+  
+  @state() open = false;
+  private stream: MediaStream | null = null;
+  private detector: BarcodeDetector | null = null;
+
+  
+  async updated(changed: Map<string, unknown>) {
+    if (changed.has("open")) {
+      if (this.open) await this.startScanner();
+      else this.stopScanner();
+    }
   }
 
-  disconnectedCallback() {
-    window.removeEventListener("enable-scanner", this._handleEnableScanner);
-    super.disconnectedCallback();
-    console.log("[ScannerOverlay] disconnectedCallback");
-  }
-
-  private _handleEnableScanner = () => {
-    this.active = true;
+  public async openDialog() {
+    console.log("[ScannerOverlay] openDialog called");
+    this.open = true;
+    if (this.open) await this.startScanner();
     this.requestUpdate();
-    // Start scanner directly when enabled
-    this.updateComplete.then(() => {
-      console.log("[ScannerOverlay] _handleEnableScanner: starting scanner");
-      const videoEl = this.shadowRoot?.getElementById(
-        "scannerVideo",
-      ) as HTMLVideoElement;
-      this.scanner.startScanning(
-        videoEl,
-        (barcode: string) => {
-          console.log("[ScannerOverlay] Barcode scanned:", barcode);
-          this._handleClose();
-          this.dispatchEvent(
-            new CustomEvent("barcode-scanned", {
-              detail: { barcode },
-              bubbles: true,
-              composed: true,
-            }),
-          );
-        },
-        (error: Error) => {
-          console.log("[ScannerOverlay] Scanner error:", error);
-        },
-      );
+  }
+
+
+  public closeDialog() {
+    console.log("[ScannerOverlay] closeDialog called");
+    this.stopScanner();
+    this.open = false;
+    this.requestUpdate();
+  }
+
+  async startScanner() {
+    console.log("[ScannerOverlay] startScanner called");
+    if (!("BarcodeDetector" in window)) {
+      console.error("BarcodeDetector not supported in this browser");
+      return;
+    }
+
+    await this.updateComplete; // Wait for render
+    const video = this.shadowRoot!.querySelector("video") as HTMLVideoElement;
+    if (!video) {
+      console.error("Video element not found");
+      return;
+    }
+    this.stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = this.stream;
+    await video.play();
+    console.log("[ScannerOverlay] Video stream started");
+
+    this.detector = new BarcodeDetector({
+      formats: ["qr_code", "code_128", "ean_13", "code_39", "upc_a"],
     });
-  };
 
-  private _handleClose() {
-    this.active = false;
-    this.scanner.stopScanning();
-    this.requestUpdate();
+    const detectLoop = async () => {
+      if (!this.open || !this.detector) return;
+      try {
+        const barcodes = await this.detector.detect(video);
+        if (barcodes.length > 0) {
+          const { rawValue, format } = barcodes[0];
+          if (rawValue !== this.barcode) {
+            this.barcode = rawValue;
+            this.format = format;
+            console.log(`[ScannerOverlay] Detected barcode: ${rawValue} (format: ${format})`);
+            fireEvent(this, "barcode-detected", { detail: { value: rawValue, format } });
+            this.stopScanner();
+            this.closeDialog();
+            return;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      requestAnimationFrame(detectLoop);
+    };
+
+    detectLoop();
+  }
+
+  stopScanner() {
+    if (this.stream) {
+      this.stream.getTracks().forEach((t) => t.stop());
+      this.stream = null;
+    }
   }
 
   render() {
-    console.log("[ScannerOverlay] render called, active:", this.active);
-    if (!this.active) return html``;
+    console.log("[ScannerOverlay] render called, open:", this.open);
     return html`
-      <ha-dialog .open=${this.active}>
-        <div class="scanner-dialog-content">
-          <video
-            id="scannerVideo"
-            class="scanner-video"
-            autoplay
-            muted
-            playsinline
-          ></video>
-          <button class="close-btn" @click="${this._handleClose}" title="Close">
-            ✕
-          </button>
-        </div>
-      </ha-dialog>
+      <dialog ?open=${this.open} style="z-index:10000;">
+        <h2>Scan a Barcode</h2>
+        <video id="video" autoplay></video>
+        <p>
+          ${this.barcode
+            ? `Detected: ${this.barcode} (${this.format})`
+            : "Point camera at barcode"}
+        </p>
+        <ha-button type="button" @click=${() => (this.closeDialog())}>
+          Close
+        </ha-button>
+      </dialog>
     `;
   }
 }
 
-customElements.define("sl-scanner-overlay", ScannerOverlay);
+customElements.define("sl-scanner-overlay", BarcodeScannerDialog);

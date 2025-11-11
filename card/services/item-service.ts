@@ -20,8 +20,21 @@ export class ShoppingListService {
     }
     const barcode: string = opts.barcode || "";
     const count: number = typeof opts.count === "number" ? opts.count : 1;
+    console.log("[ShoppingListService] addItem called", {
+      name,
+      entityId,
+      description,
+      opts,
+      barcode,
+      count,
+      hass: this.hass,
+    });
     try {
-      if (!this.hass || !entityId || !name) {
+      const availableServices = (this.hass as any).services || {};
+      if (!availableServices["todo"] || !availableServices["todo"]["add_item"]) {
+        console.warn(`[ShoppingListService] addItem failed: 'todo.add_item' service not available`, {
+          services: availableServices,
+        });
         return false;
       }
       const items: ShoppingListItem[] = await this.getItems(entityId);
@@ -39,6 +52,7 @@ export class ShoppingListService {
         newTotal = (existing.total ?? 0) + count;
         const newDesc: string = `barcode:${barcode};count:${newCount};total:${newTotal}`;
         const itemId: string = existing.id;
+        console.log("[ShoppingListService] Updating existing item", { itemId, newDesc });
         await (this.hass as any).callService("todo", "update_item", {
           entity_id: entityId,
           item: itemId,
@@ -47,6 +61,7 @@ export class ShoppingListService {
         return true;
       } else {
         const newDesc: string = `barcode:${barcode};count:${count};total:${count}`;
+        console.log("[ShoppingListService] Adding new item", { name, entityId, newDesc });
         await (this.hass as any).callService("todo", "add_item", {
           entity_id: entityId,
           item: name,
@@ -55,6 +70,7 @@ export class ShoppingListService {
         return true;
       }
     } catch (error) {
+      console.error("[ShoppingListService] addItem exception", { error, name, entityId, description });
       return false;
     }
   }

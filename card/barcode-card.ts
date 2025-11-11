@@ -4,28 +4,27 @@ import "./barcode-card-editor";
  * Clean, modular implementation with separated concerns
  */
 import { LitElement, html, css } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { ProductLookup } from "./services/product-service";
 import { ShoppingListService } from "./services/item-service";
-import "./components/actions-panel";
 import "./components/quick-chips-panel";
-import "./components/scanner-overlay";
+import "./components/action-button";
 import "./components/input-panel";
-import { InputPanel } from "./components/input-panel";
 import "./components/shopping-list-overlay";
+import "./components/scanner-overlay";
 import type { BarcodeCardConfig, Product } from "./types";
+import { ShoppingListOverlay } from "./components/shopping-list-overlay";
+import { translate } from "./translations/translations";
+import { fireEvent, HA_CARD_REQUIRED_HA_COMPONENTS } from "./common";
+import { BarcodeScannerDialog } from "./components/scanner-overlay";
 import { loadHaComponents } from "@kipk/load-ha-components";
 
 @customElement("barcode-card")
 export class BarcodeCard extends LitElement {
   @property({ type: Object }) config?: BarcodeCardConfig;
-  @state() isLoading: boolean = false;
-  @state() currentProduct: Product | null = null;
-
   productLookup: ProductLookup | null = null;
   todoListService: ShoppingListService | null = null;
 
-  addItemPanelRef: InputPanel | null = null;
   private _hass: any | null = null;
 
   static styles = css`
@@ -47,54 +46,50 @@ export class BarcodeCard extends LitElement {
         padding: 12px;
       }
     }
+    .actions-section {
+      display: flex;
+      width: 100%;
+      justify-content: stretch;
+      align-items: stretch;
+      margin-bottom: 16px;
+      gap: 0;
+    }
+    sl-action-button {
+      flex: 1 1 0;
+      min-width: 0;
+      width: 100%;
+      margin: 0;
+      height: 48px;
+      box-sizing: border-box;
+    }
   `;
 
   constructor() {
-    super();
-    this.productLookup = new ProductLookup();
-    this.todoListService = new ShoppingListService(this._hass);
+  super();
+  this.productLookup = new ProductLookup();
+  // Don't initialize todoListService here, wait for hass to be set
   }
 
   async connectedCallback() {
     super.connectedCallback();
-    this.addEventListener("add-item", (e: CustomEvent) =>
-      this._handleAddItem(e),
-    );
-    this.addEventListener("barcode-scanned", async (e: CustomEvent) => {
-      const barcode = e.detail?.barcode;
-      console.log("[BarcodeCard] barcode-scanned event:", barcode);
-      if (barcode && this.addItemPanelRef) {
-        const product = await this.productLookup?.getProductInfo(barcode);
-        const value = product && product.name ? product.name : barcode;
-        console.log("[BarcodeCard] Setting input value:", value);
-        this.addItemPanelRef.setInputValue(value);
-      }
-    });
-    this.addEventListener("shopping-list-refresh", () => {
-      const shoppingListEl = this.renderRoot.querySelector("sl-shopping-list");
-      if (
-        shoppingListEl &&
-        typeof (shoppingListEl as any).refresh === "function"
-      ) {
-        (shoppingListEl as any).refresh();
-      }
-    });
-    // Listen for show-shopping-list and open overlay
-    this.addEventListener("show-shopping-list", () => {
-      const overlay = this.renderRoot.querySelector("sl-shopping-list-overlay") as any;
-      if (overlay && typeof overlay.showDialog === "function") {
-        overlay.showDialog({
-          entityId: this.config?.entity,
-          listManager: this.todoListService,
-          disabled: this.isLoading,
-        });
-      }
-    });
+    await loadHaComponents(HA_CARD_REQUIRED_HA_COMPONENTS);
+    // Validate todo list entity
+    if (!this.config?.entity) {
+      console.warn("[BarcodeCard] No todo list entity selected in config.");
+    } else if (!this._hass?.states?.[this.config.entity]) {
+      console.warn(`[BarcodeCard] Todo list entity '${this.config.entity}' does not exist in Home Assistant.`);
+    } else {
+      console.log(`[BarcodeCard] Todo list entity '${this.config.entity}' is valid and exists.`);
+    }
+  }
+  async disconnectedCallback() {
+    super.disconnectedCallback();
   }
   set hass(hass: any) {
     this._hass = hass;
-    this.todoListService = new ShoppingListService(hass);
-    this.requestUpdate();
+    if (hass) {
+      this.todoListService = new ShoppingListService(hass);
+    }
   }
 
   setConfig(config: BarcodeCardConfig) {
@@ -105,30 +100,50 @@ export class BarcodeCard extends LitElement {
     return document.createElement("barcode-card-editor");
   }
 
+  private _handleShowShoppingListOverlay() {
+    const query = this.shadowRoot.querySelector<ShoppingListOverlay>(
+      "sl-shopping-list-overlay",
+    )!;
+    query?.openDialog();
+  }
+  private _handleShowScannerOverlay() {
+    const query =
+      this.shadowRoot.querySelector<BarcodeScannerDialog>("sl-scanner-overlay")!;
+    query?.openDialog();
+  }
+
   render() {
     return html`
       <div class="card-container">
         <!-- Scanner Overlay -->
         <sl-scanner-overlay></sl-scanner-overlay>
         <!-- Actions Section -->
-        <sl-actions-panel
-          .disabled="${this.isLoading}"
-          @scan-barcode="${() =>
-            this.dispatchEvent(
-              new CustomEvent("enable-scanner", {
-                bubbles: true,
-                composed: true,
-              }),
-            )}"
-        ></sl-actions-panel>
+
+        <div class="actions-section">
+          <sl-action-button
+            icon="mdi:camera"
+            .label="${translate("actions.scan_barcode")}"
+            @action-click="${this._handleShowScannerOverlay}"
+          ></sl-action-button>
+          <sl-action-button
+            icon="mdi:magnify"
+            .label="${translate("actions.lookup") ?? "Lookup"}"
+            outlined
+            @action-click="${() =>
+              fireEvent(this, "lookup", { bubbles: true, composed: true })}"
+          ></sl-action-button>
+          <sl-action-button
+            icon="mdi:format-list-bulleted"
+            .label="${translate("actions.show_list")}"
+            outlined
+            @action-click="${this._handleShowShoppingListOverlay}"
+          ></sl-action-button>
+        </div>
 
         <!-- Add Item Panel (handles both manual and barcode input) -->
         <sl-input-panel
           .entityId="${this.config?.entity}"
           .todoListService="${this.todoListService}"
-          ${(el) => {
-            this.addItemPanelRef = el as InputPanel;
-          }}
         ></sl-input-panel>
 
         <!-- Quick Chips Section -->
@@ -146,20 +161,5 @@ export class BarcodeCard extends LitElement {
         ></sl-shopping-list-overlay>
       </div>
     `;
-  }
-
-  async _handleAddItem(e: CustomEvent) {
-    const { productName, entityId, description } = e.detail;
-    if (this.todoListService && productName && entityId) {
-      await this.todoListService.addItem(productName, entityId, description);
-      // Refresh the shopping list after adding
-      const shoppingListEl = this.renderRoot.querySelector("sl-shopping-list");
-      if (
-        shoppingListEl &&
-        typeof (shoppingListEl as any).refresh === "function"
-      ) {
-        (shoppingListEl as any).refresh();
-      }
-    }
   }
 }

@@ -3,6 +3,7 @@ import { property, state } from "lit/decorators.js";
 import { SHOPPING_LIST_REFRESH_EVENT } from "../const";
 import { translate } from "../translations/translations.js";
 import { ShoppingListService } from "../services/item-service.js";
+import { fireEvent } from "../common.js";
 
 /**
  * <add-item-panel>
@@ -131,12 +132,7 @@ export class InputPanel extends LitElement {
         description,
       );
       if (result) {
-        this.dispatchEvent(
-          new CustomEvent(SHOPPING_LIST_REFRESH_EVENT, {
-            bubbles: true,
-            composed: true,
-          }),
-        );
+        fireEvent(this, SHOPPING_LIST_REFRESH_EVENT, { item: result });
       } else {
         console.error("Failed to add item to todo list");
       }

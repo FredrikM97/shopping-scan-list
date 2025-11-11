@@ -7,6 +7,7 @@ import { LitElement, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { BarcodeCardConfig } from "./types";
 import { loadHaComponents } from "@kipk/load-ha-components";
+import { fireEvent } from "./common";
 
 declare global {
   interface Window {
@@ -18,7 +19,6 @@ declare global {
 export class BarcodeCardEditor extends LitElement {
   @property({ type: Object }) hass?: any;
   @property({ type: Object }) config?: BarcodeCardConfig;
-  @state() haComponentsReady: boolean = false;
 
   static styles = css`
     .card-config {
@@ -70,8 +70,6 @@ export class BarcodeCardEditor extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
-    await loadHaComponents(["ha-entity-picker", "ha-form", "ha-textfield"]);
-    this.haComponentsReady = true;
     this.requestUpdate();
   }
 
@@ -82,9 +80,6 @@ export class BarcodeCardEditor extends LitElement {
   }
 
   render() {
-    if (!this.haComponentsReady) {
-      return html`<div>Loading Home Assistant components...</div>`;
-    }
     return html`
       <div class="card-config">
         <div class="section-header">Basic Settings</div>
@@ -161,13 +156,7 @@ export class BarcodeCardEditor extends LitElement {
     if (!this.config) return;
     const target = e.target as HTMLInputElement;
     this.config = { ...this.config, title: target.value };
-    this.dispatchEvent(
-      new CustomEvent("config-changed", {
-        detail: { config: this.config },
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    fireEvent(this, "config-changed", { config: this.config });
   }
 
   _updateConfig() {
@@ -191,25 +180,13 @@ export class BarcodeCardEditor extends LitElement {
       show_header_toggle: showHeaderToggle,
     };
     this.config = newConfig;
-    this.dispatchEvent(
-      new CustomEvent("config-changed", {
-        detail: { config: this.config },
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    fireEvent(this, "config-changed", { config: this.config });
   }
 
   _entityChanged(event: CustomEvent) {
     if (!this.config) return;
     this.config = { ...this.config, entity: event.detail.value };
-    this.dispatchEvent(
-      new CustomEvent("config-changed", {
-        detail: { config: this.config },
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    fireEvent(this, "config-changed", { config: this.config });
   }
 }
 

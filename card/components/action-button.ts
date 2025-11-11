@@ -1,5 +1,6 @@
 import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
+import { fireEvent } from "../common";
 
 /**
  * ActionButton - reusable button for actions in barcode-card
@@ -45,9 +46,7 @@ export class ActionButton extends LitElement {
     return html`
       <button
         class="${this.outlined ? "outlined" : ""}"
-        ?disabled="${this.disabled}"
-        @click="${(e: Event) =>
-          this.dispatchEvent(new CustomEvent("action-click", { detail: e }))}"
+        @click="${(e: Event) => fireEvent(this, "action-click", { detail: e })}"
       >
         <ha-icon icon="${this.icon}"></ha-icon>
         <span>${this.label}</span>
