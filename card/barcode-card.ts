@@ -60,10 +60,17 @@ export class BarcodeCard extends LitElement {
     .actions-section {
       display: flex;
       width: 100%;
-      background: var(--ha-card-background, var(--card-background-color, #fff));
-      border: 1px solid var(--divider-color, #e0e0e0);
+      margin-top: 12px;
+      margin-bottom: 8px;
       overflow: hidden;
-      margin-bottom: var(--ha-card-actions-margin-bottom, 16px);
+      background: var(--ha-card-background, var(--card-background-color, #fafbfc));
+      box-sizing: border-box;
+    }
+    .section-separator {
+      width: 100%;
+      height: 0;
+      border-bottom: 0.5px solid var(--divider-color, #f0f1f3);
+      margin-bottom: 12px;
     }
   
 
@@ -145,7 +152,7 @@ export class BarcodeCard extends LitElement {
             @action-click="${this._handleShowScannerOverlay}"
           ></sl-action-button>
           <sl-action-button
-           icon="mdi:camera"
+           icon="mdi:plus"
             .label="${translate("actions.add_item")}" 
             @action-click="${this._handleShowManualDeviceDialog}"
           ></sl-action-button>
@@ -154,7 +161,8 @@ export class BarcodeCard extends LitElement {
             .label="${translate("actions.show_list")}" 
             @action-click="${this._handleShowShoppingListOverlay}"
           ></sl-action-button>
-        </div>
+  </div>
+  <div class="section-separator"></div>
 
         <!-- Add Item Panel (handles both manual and barcode input) -->
         <sl-input-panel

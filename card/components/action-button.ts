@@ -14,51 +14,44 @@ export class ActionButton extends LitElement {
   @property({ type: Boolean }) disabled = false;
 
   static styles = css`
-  :host {
-    display: block;
-    width: 100%;
-  }
-  .action-bar {
-    display: flex;
-    width: 100%;
-  }
-  ha-button {
-    width: 100%;
-    border-radius: 0 !important;
-    margin: 0;
-    box-shadow: none;
-    min-width: 0;
-    border: none;
-    background: var(--ha-primary-background-color, #f5f5f5);
-    color: var(--ha-primary-color, #1976d2);
-    transition: background 0.2s, color 0.2s;
-  }
-  ha-button:hover {
-    background: var(--ha-card-background, #fff);
-    color: var(--ha-primary-color, #1565c0);
-  }
-  /* Subtle divider between buttons, only between (not around) */
-  :host(:not(:first-child)) ha-button::part(base) {
-    border-left: 1px solid var(--divider-color, #e0e0e0);
-  }
-  ha-button::part(base) {
-    border-radius: 0 !important;
-  }
-  ha-icon {
-    --mdc-icon-size: 20px;
-    color: var(--ha-primary-color, #1976d2);
-  }
-`
-
+    :host {
+      width: 100%;
+    }
+    .action-bar {
+      display: flex;
+      width: 100%;
+    }
+    ha-button {
+      flex: 1 1 0;
+      border-radius: 0;
+      min-width: 0;
+      border: none;
+      background: none;
+      color: var(--ha-primary-color, #1976d2);
+      padding: 0 8px;
+    }
+    .action-bar ha-button:first-child {
+      border-top-left-radius: var(--ha-card-border-radius, 12px);
+      border-bottom-left-radius: var(--ha-card-border-radius, 12px);
+    }
+    .action-bar ha-button:last-child {
+      border-top-right-radius: var(--ha-card-border-radius, 12px);
+      border-bottom-right-radius: var(--ha-card-border-radius, 12px);
+    }
+    ha-icon {
+      --mdc-icon-size: 20px;
+      color: var(--ha-primary-color, #1976d2);
+    }
+  `;
   render() {
     return html`
       <div class="action-bar">
         <ha-button
           class="${this.outlined ? "outlined" : ""}"
-          ?disabled="${this.disabled}"
-          @click="${(e: Event) => fireEvent(this, "action-click", { detail: e })}"
+          ?disabled=${this.disabled}
+          @click=${(e: Event) => fireEvent(this, "action-click", { detail: e })}
         >
-          <ha-icon icon="${this.icon}"></ha-icon>
+          <ha-icon .icon=${this.icon}></ha-icon>
           <span>${this.label}</span>
         </ha-button>
       </div>

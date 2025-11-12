@@ -10,12 +10,3 @@ This is very early development and I might rewrite everything again depending on
 ## Development
 
 Simplest to UI test is to use `npm run setup` to start local docker container with home assistant. To update the card run `npm run build:ha`
-
-## TODO
-
-- Add groups to filter
-- Somehow fix to select barcode from specific countries.. Like in sweden if barcode match with item in US then keep the swedish one
-- Improve testing
-- Add workflow for testing and release
-- Add a test to verify that all translations are in sync.
-- Improve readme and explain how the local setup of home assistant for testing works
