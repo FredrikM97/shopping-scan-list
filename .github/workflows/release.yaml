@@ -24,7 +24,7 @@ jobs:
       - name: Upload to release
         uses: svenstaro/upload-release-action@v2
         with:
-          file: dist/mealplan-card.js
+          file: dist/grocery-scan-card.js
           prerelease: true
           tag: ${{ github.ref }}
           overwrite: true

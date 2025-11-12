@@ -5,12 +5,12 @@ import { translate } from "../translations/translations.js";
 import { ShoppingListItem } from "../types.js";
 import { ShoppingListStatus } from "../types.js";
 import { fireEvent } from "../common.js";
-import { ShoppingListService } from "../services/item-service.js";
-import "./sl-dialog-overlay.js";
+import { TodoService } from "../services/todo-service.js";
+import "./dialog-overlay.js";
 
-@customElement("sl-shopping-list-overlay")
+@customElement("gsc-list-overlay")
 export class ShoppingListOverlay extends LitElement {
-  @property({ type: Object }) listManager: ShoppingListService = null;
+  @property({ type: Object }) listManager: TodoService = null;
   @property({ type: String }) entityId: string = "";
   @property({ type: Object }) hass: any = null;
 
@@ -28,7 +28,7 @@ export class ShoppingListOverlay extends LitElement {
         max-height: 100%;
         overflow: auto;
       }
-      sl-dialog-overlay::part(dialog-wrapper) {
+      gsc-dialog-overlay::part(dialog-wrapper) {
         min-height: 700px;
         max-height: 99vh;
         min-width: 600px;
@@ -215,7 +215,7 @@ export class ShoppingListOverlay extends LitElement {
         )
       : [];
     return html`
-      <sl-dialog-overlay
+      <gsc-dialog-overlay
         .open=${this.open}
         @dialog-resized=${this._onDialogResized}
         maxHeight="99vh"
@@ -225,8 +225,8 @@ export class ShoppingListOverlay extends LitElement {
         >
         <span slot="header">${translate("shopping_list.subtitle") ?? ""}</span>
         <div>
-          <sl-message-banner type="error"></sl-message-banner>
-          <sl-message-banner type="success"></sl-message-banner>
+          <gsc-message-banner type="error"></gsc-message-banner>
+          <gsc-message-banner type="success"></gsc-message-banner>
           <ha-data-table
             .columns=${this.getColumns()}
             .data=${data}
@@ -240,12 +240,12 @@ export class ShoppingListOverlay extends LitElement {
             >${translate("shopping_list.close") ?? "Close"}</ha-button
           >
         </span>
-      </sl-dialog-overlay>
+      </gsc-dialog-overlay>
     `;
   }
 }
 declare global {
   interface HTMLElementTagNameMap {
-    "sl-shopping-list-overlay": ShoppingListOverlay;
+  "gsc-list-overlay": ShoppingListOverlay;
   }
 }

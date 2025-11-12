@@ -1,12 +1,10 @@
-import { loadHaComponents } from "@kipk/load-ha-components";
 import { LitElement, html, css } from "lit";
 import { property, state } from "lit/decorators.js";
-import { fireEvent } from "../common";
 import { BannerMessage } from "../types";
-import "./sl-message-banner";
+import "./message-banner";
 import { ProductLookup } from "../services/product-service";
 import { SUPPORTED_BARCODE_FORMATS } from "../const";
-import "./sl-dialog-overlay";
+import "./dialog-overlay";
 
 // Add type definition if not available in DOM lib
 declare global {
@@ -313,17 +311,17 @@ export class BarcodeScannerDialog extends LitElement {
       ? this.renderBarcodeInfoView()
       : this.renderVideoView();
     return html`
-      <sl-dialog-overlay
+      <gsc-dialog-overlay
         .open=${this.open}
         width="400px"
         minWidth="400px"
         maxWidth="400px"
       >
-        <sl-message-banner .banner=${this.banner}></sl-message-banner>
+  <gsc-message-banner .banner=${this.banner}></gsc-message-banner>
         ${view}
-      </sl-dialog-overlay>
+      </gsc-dialog-overlay>
     `;
   }
 }
 
-customElements.define("sl-scanner-overlay", BarcodeScannerDialog);
+customElements.define("gsc-scanner-overlay", BarcodeScannerDialog);

@@ -2,11 +2,6 @@ import { LitElement, html, css } from "lit";
 import { property } from "lit/decorators.js";
 import { fireEvent } from "../common";
 
-/**
- * ActionButton - reusable button for actions in barcode-card
- * Usage:
- * <sl-action-button icon="mdi:camera" label="Scan" @action-click="..." />
- */
 export class ActionButton extends LitElement {
   @property({ type: String }) icon = "";
   @property({ type: String }) label = "";
@@ -59,4 +54,4 @@ export class ActionButton extends LitElement {
   }
 }
 
-customElements.define("sl-action-button", ActionButton);
+customElements.define("gsc-action-btn", ActionButton);

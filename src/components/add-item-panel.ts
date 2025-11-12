@@ -2,18 +2,18 @@ import { LitElement, html, css } from "lit";
 import { property, state } from "lit/decorators.js";
 import { SHOPPING_LIST_REFRESH_EVENT } from "../const.js";
 import { translate } from "../translations/translations.js";
-import { ShoppingListService } from "../services/item-service.js";
+import { TodoService } from "../services/todo-service.js";
 import { fireEvent } from "../common.js";
 import type { ShoppingListItem } from "../types.js";
 import { BannerMessage } from "../types.js";
-import "./sl-message-banner.js";
+import "./message-banner";
 
 /**
  * <add-item-panel>
  * Centralized add-item logic for barcode, manual, and quick add
  */
 export class AddItemPanel extends LitElement {
-  @property({ type: Object }) todoListService: ShoppingListService = null;
+  @property({ type: Object }) todoListService: TodoService = null;
   @property({ type: String }) entityId: string = "";
   @state() private inputValue: string = "";
   @state() private inputCount: number = 1;
@@ -83,7 +83,7 @@ export class AddItemPanel extends LitElement {
   render() {
     return html`
       <div class="add-item-panel">
-        <sl-message-banner .banner=${this.banner}></sl-message-banner>
+  <gsc-message-banner .banner=${this.banner}></gsc-message-banner>
         <div class="input-container">
           <ha-textfield
             label="${translate("shopping_list.add_item") ?? "Add item"}"
@@ -116,4 +116,4 @@ export class AddItemPanel extends LitElement {
   }
 }
 
-customElements.define("sl-add-item-panel", AddItemPanel);
+customElements.define("gsc-add-item-panel", AddItemPanel);

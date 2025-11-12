@@ -1,31 +1,27 @@
-import "./barcode-card-editor";
-/**
- * Shopping List Barcode Card
- * Clean, modular implementation with separated concerns
- */
+import "./editor";
 import { LitElement, html, css } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { ProductLookup } from "./services/product-service";
-import { ShoppingListService } from "./services/item-service";
+import { TodoService } from "./services/todo-service";
 import "./components/quick-chips-panel";
 import "./components/action-button";
 import "./components/shopping-list-overlay";
 import "./components/scanner-overlay";
-import type { BarcodeCardConfig, Product } from "./types";
+import type { GroceryScanCardConfig  } from "./types";
 import { ShoppingListOverlay } from "./components/shopping-list-overlay";
 import { translate } from "./translations/translations";
-import { fireEvent, HA_CARD_REQUIRED_HA_COMPONENTS } from "./common";
+import {  HA_CARD_REQUIRED_HA_COMPONENTS } from "./common";
 import { BarcodeScannerDialog } from "./components/scanner-overlay";
 import { loadHaComponents } from "@kipk/load-ha-components";
 import { AddItemOverlay } from "./components/add-item-overlay";
 import "./components/add-item-overlay";
 import "./components/add-item-panel";
 
-@customElement("barcode-card")
-export class BarcodeCard extends LitElement {
-  @property({ type: Object }) config?: BarcodeCardConfig;
+@customElement("grocery-scan-card")
+export class GroceryScanCard extends LitElement {
+  @property({ type: Object }) config?: GroceryScanCardConfig;
   productLookup: ProductLookup | null = null;
-  todoListService: ShoppingListService | null = null;
+  todoListService: TodoService | null = null;
 
   private _hass: any | null = null;
 
@@ -82,14 +78,14 @@ export class BarcodeCard extends LitElement {
     await loadHaComponents(HA_CARD_REQUIRED_HA_COMPONENTS);
     // Validate todo list entity
     if (!this.config?.entity) {
-      console.warn("[BarcodeCard] No todo list entity selected in config.");
+      console.warn("[GroceryScanCard] No todo list entity selected in config.");
     } else if (!this._hass?.states?.[this.config.entity]) {
       console.warn(
-        `[BarcodeCard] Todo list entity '${this.config.entity}' does not exist in Home Assistant.`,
+        `[GroceryScanCard] Todo list entity '${this.config.entity}' does not exist in Home Assistant.`,
       );
     } else {
       console.log(
-        `[BarcodeCard] Todo list entity '${this.config.entity}' is valid and exists.`,
+        `[GroceryScanCard] Todo list entity '${this.config.entity}' is valid and exists.`,
       );
     }
   }
@@ -99,35 +95,35 @@ export class BarcodeCard extends LitElement {
   set hass(hass: any) {
     this._hass = hass;
     if (hass) {
-      this.todoListService = new ShoppingListService(hass);
+      this.todoListService = new TodoService(hass);
     }
   }
 
-  setConfig(config: BarcodeCardConfig) {
+  setConfig(config: GroceryScanCardConfig) {
     this.config = config;
   }
 
   static getConfigElement() {
-    return document.createElement("barcode-card-editor");
+    return document.createElement("grocery-scan-card-editor");
   }
 
   private _handleShowShoppingListOverlay() {
     const query = this.shadowRoot.querySelector<ShoppingListOverlay>(
-      "sl-shopping-list-overlay",
+      "gsc-list-overlay",
     )!;
     query?.openDialog();
   }
   private _handleShowScannerOverlay() {
     const query =
       this.shadowRoot.querySelector<BarcodeScannerDialog>(
-        "sl-scanner-overlay",
+        "gsc-scanner-overlay",
       )!;
     query?.openDialog();
   }
 
   private _handleShowAddItemOverlay() {
     const query = this.shadowRoot.querySelector<AddItemOverlay>(
-      "sl-add-item-overlay",
+      "gsc-add-item-overlay",
     )!;
     query?.openDialog();
   }
@@ -142,54 +138,54 @@ export class BarcodeCard extends LitElement {
     return html`
       <ha-card>
         <!-- Scanner Overlay -->
-        <sl-scanner-overlay
+        <gsc-scanner-overlay
           .serviceState="${serviceState}"
-        ></sl-scanner-overlay>
+        ></gsc-scanner-overlay>
         <!-- Manual Device Dialog -->
-        <sl-add-item-overlay
+        <gsc-add-item-overlay
           .todoListService="${this.todoListService}"
           .entityId="${this.config?.entity}"
-        ></sl-add-item-overlay>
+        ></gsc-add-item-overlay>
         <!-- Actions Section -->
 
         <div class="actions-section">
-          <sl-action-button
+          <gsc-action-btn
             icon="mdi:camera"
             .label="${translate("actions.scan_barcode")}"
             @action-click="${this._handleShowScannerOverlay}"
-          ></sl-action-button>
-          <sl-action-button
+          ></gsc-action-btn>
+          <gsc-action-btn
             icon="mdi:plus"
             .label="${translate("actions.add_item")}"
             @action-click="${this._handleShowAddItemOverlay}"
-          ></sl-action-button>
-          <sl-action-button
+          ></gsc-action-btn>
+          <gsc-action-btn
             icon="mdi:format-list-bulleted"
             .label="${translate("actions.show_list")}"
             @action-click="${this._handleShowShoppingListOverlay}"
-          ></sl-action-button>
+          ></gsc-action-btn>
         </div>
         <div class="section-separator"></div>
 
         <!-- Add Item Panel (handles both manual and barcode input) -->
         <!-- Comented out for now. Might look nicer
-        <sl-add-item-panel
+        <gsc-add-panel
           .entityId="${this.config?.entity}"
           .todoListService="${this.todoListService}"
-        ></sl-add-item-panel>
+        ></gsc-add-panel>
         -->
         <!-- Quick Chips Section -->
-        <sl-quick-chips-panel
+        <gsc-chips-panel
           .entityId="${this.config?.entity}"
           .todoListService="${this.todoListService}"
-        ></sl-quick-chips-panel>
+        ></gsc-chips-panel>
 
         <!-- Shopping List Modal (handled by overlay component) -->
-        <sl-shopping-list-overlay
+        <gsc-list-overlay
           .listManager="${this.todoListService}"
           .entityId="${this.config?.entity}"
           .hass="${this._hass}"
-        ></sl-shopping-list-overlay>
+        ></gsc-list-overlay>
       </ha-card>
     `;
   }

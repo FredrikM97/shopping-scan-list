@@ -5,8 +5,7 @@
 
 import { LitElement, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { BarcodeCardConfig } from "./types";
-import { loadHaComponents } from "@kipk/load-ha-components";
+import { GroceryScanCardConfig } from "./types";
 import { fireEvent } from "./common";
 
 declare global {
@@ -15,10 +14,10 @@ declare global {
   }
 }
 
-@customElement("barcode-card-editor")
-export class BarcodeCardEditor extends LitElement {
+@customElement("grocery-scan-card-editor")
+export class GroceryScanCardEditor extends LitElement {
   @property({ type: Object }) hass?: any;
-  @property({ type: Object }) config?: BarcodeCardConfig;
+  @property({ type: Object }) config?: GroceryScanCardConfig;
 
   static styles = css`
     .card-config {
@@ -72,8 +71,8 @@ export class BarcodeCardEditor extends LitElement {
     super.connectedCallback();
   }
 
-  setConfig(config: BarcodeCardConfig): void {
-    console.log("[BarcodeCardEditor] setConfig called", config);
+  setConfig(config: GroceryScanCardConfig): void {
+    console.log("[GroceryScanCardEditor] setConfig called", config);
     this.config = { ...config };
   }
 
@@ -156,7 +155,7 @@ export class BarcodeCardEditor extends LitElement {
     const titleInput = this.shadowRoot?.getElementById(
       "title",
     ) as HTMLInputElement;
-    const newConfig: BarcodeCardConfig = {
+  const newConfig: GroceryScanCardConfig = {
       ...this.config,
       title: titleInput?.value ?? "",
       enable_camera: enableCamera,
@@ -175,10 +174,10 @@ export class BarcodeCardEditor extends LitElement {
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: "barcode-card",
-  name: "Barcode Card",
+  type: "grocery-scan-card",
+  name: "Grocery Scan Card",
   description:
-    "A card for managing shopping lists with barcode scanning support",
+    "A card for managing shopping lists with grocery scanning support",
   preview: true,
-  documentationURL: "https://github.com/FredrikM97/shopping-list-barcode",
+  documentationURL: "https://github.com/FredrikM97/grocery-scan-card",
 });

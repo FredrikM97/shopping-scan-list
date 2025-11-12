@@ -2,7 +2,7 @@ import { LitElement, html, css } from "lit";
 import { property, state } from "lit/decorators.js";
 import { SHOPPING_LIST_REFRESH_EVENT } from "../const.js";
 import { translate } from "../translations/translations.js";
-import { ShoppingListService } from "../services/item-service.js";
+import { TodoService } from "../services/todo-service.js";
 import { fireEvent } from "../common.js";
 
 /**
@@ -15,7 +15,7 @@ export class QuickChipsPanel extends LitElement {
   @state() private _items: Array<{ name: string; total?: number }> = [];
   @property({ type: Boolean }) disabled = false;
   @property({ type: String }) entityId: string = "";
-  @property({ type: Object }) todoListService: ShoppingListService = null;
+  @property({ type: Object }) todoListService: TodoService = null;
 
   static styles = css`
     .quick-chips-section {
@@ -76,7 +76,7 @@ export class QuickChipsPanel extends LitElement {
         );
         // Refresh the shopping list after quick add
         const shoppingListEl = (this.getRootNode() as any).querySelector?.(
-          "sl-shopping-list",
+          "gsc-list",
         );
         if (
           shoppingListEl &&
@@ -144,4 +144,4 @@ export class QuickChipsPanel extends LitElement {
   }
 }
 
-customElements.define("sl-quick-chips-panel", QuickChipsPanel);
+customElements.define("gsc-chips-panel", QuickChipsPanel);

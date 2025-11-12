@@ -8,16 +8,16 @@ export default defineConfig({
     emptyOutDir: true,
     minify: "terser",
     lib: {
-      entry: "card/barcode-card.ts",
-      name: "BarcodeCard",
-      fileName: "barcode-card",
+      entry: "src/main.ts",
+      name: "GroceryScanCard",
+      fileName: "grocery-scan-card",
       formats: ["es"],
     },
     rollupOptions: {
       output: {
         inlineDynamicImports: true,
         manualChunks: undefined,
-        entryFileNames: "barcode-card.js",
+        entryFileNames: "grocery-scan-card.js",
       },
     },
   },

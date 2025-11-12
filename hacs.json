@@ -1,7 +1,7 @@
 {
-  "name": "ShoppingScan Card",
+  "name": "GroceryScan Card",
   "render_readme": true,
-  "filename": "shopping-scan-card.js",
+  "filename": "grocery-scan-card.js",
   "zip_release": true,
   "hide_default_branch": true,
   "homeassistant": "2025.11.0"

@@ -49,9 +49,9 @@ fi
 sleep 2
 
 # Build the card first
-echo "📦 Building Barcode Card..."
+echo "📦 Building Card..."
 cd .. && npm run build && cd dev
-mkdir -p ./config/www && cp ../dist/barcode-card.js ./config/www/
+mkdir -p ./config/www && cp ../dist/grocery-scan-card.js ./config/www/
 
 # Ensure config directory is set up properly
 echo "⚙️  Setting up Home Assistant configuration..."
@@ -90,30 +90,6 @@ fi
 
 # Wait for Home Assistant to start
 if wait_for_hass; then
-    echo ""
-    echo "Setup complete."
-    echo "================================"
-    echo "Home Assistant: http://localhost:8124"
-    echo "Card location: ./config/www/barcode-card.js"
-    echo "Barcode Card is pre-configured on the dashboard."
-    echo ""
-    echo "Development commands:"
-    echo "  npm run dev     # Auto-rebuild card on changes"
-    echo "  npm run build   # Manual rebuild"
-    if [ "$USE_DOCKER" = true ]; then
-        echo "  docker stop homeassistant-dev"
-        echo "  docker start homeassistant-dev"
-        echo "  docker logs -f homeassistant-dev"
-    else
-        echo "  pkill -f homeassistant"
-        echo "  npm run setup"
-    fi
-    echo ""
-    echo "Dashboard config:"
-    echo "type: custom:barcode-card"
-    echo "title: Shopping List Barcode"
-    echo "enable_camera: true"
-    echo ""
     echo "The card should be visible at http://localhost:8124"
 else
     echo "Failed to start Home Assistant. Check ./config/hass.log for errors."

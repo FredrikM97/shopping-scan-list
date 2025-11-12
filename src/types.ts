@@ -7,7 +7,7 @@ export interface LovelaceCardConfig {
   [key: string]: any;
 }
 
-export interface BarcodeCardConfig extends LovelaceCardConfig {
+export interface GroceryScanCardConfig extends LovelaceCardConfig {
   title: string;
   enable_camera: boolean;
   cache_products: boolean;

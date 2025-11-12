@@ -1,14 +1,14 @@
 import { LitElement, html, css } from "lit";
 import { property, state } from "lit/decorators.js";
-import type { ShoppingListService } from "../services/item-service.js";
-import "./sl-dialog-overlay.js";
-import "./sl-message-banner.js";
+import type { TodoService } from "../services/todo-service.js";
+import "./dialog-overlay.js";
+import "./message-banner";
 
 import { translate } from "../translations/translations.js";
 import { BannerMessage } from "../types.js";
 
 export class AddItemOverlay extends LitElement {
-  @property({ type: Object }) todoListService: ShoppingListService | null =
+  @property({ type: Object }) todoListService: TodoService | null =
     null;
   @property({ type: String }) entityId: string = "";
 
@@ -50,6 +50,9 @@ export class AddItemOverlay extends LitElement {
   closeDialog() {
     this.open = false;
     this.banner = null;
+    this.name = "";
+    this.barcode = "";
+    this.brand = "";
   }
 
   async _addDevice() {
@@ -92,7 +95,7 @@ export class AddItemOverlay extends LitElement {
 
   render() {
     return html`
-      <sl-dialog-overlay
+      <gsc-dialog-overlay
         .open=${this.open}
         width="400px"
         minWidth="400px"
@@ -102,7 +105,7 @@ export class AddItemOverlay extends LitElement {
           >${translate("add_item.title") ?? "Add Item Manually"}</span
         >
         <div class="dialog-content">
-          <sl-message-banner .banner=${this.banner}></sl-message-banner>
+          <gsc-message-banner .banner=${this.banner}></gsc-message-banner>
           <ha-textfield
             label="Name"
             value=${this.name}
@@ -127,9 +130,9 @@ export class AddItemOverlay extends LitElement {
             Cancel
           </ha-button>
         </span>
-      </sl-dialog-overlay>
+      </gsc-dialog-overlay>
     `;
   }
 }
 
-customElements.define("sl-add-item-overlay", AddItemOverlay);
+customElements.define("gsc-add-item-overlay", AddItemOverlay);

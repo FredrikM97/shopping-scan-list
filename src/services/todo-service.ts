@@ -1,3 +1,4 @@
+// File renamed from item-service.ts to todo-service.ts
 /**
  * ShoppingListService - Unified Home Assistant shopping/todo list service
  */
@@ -14,7 +15,7 @@ import {
 import { fireEvent } from "../common";
 import { ShoppingListItem, ShoppingListStatus } from "../types";
 
-export class ShoppingListService {
+export class TodoService {
   private hass: Record<string, unknown>;
 
   constructor(hass: Record<string, unknown>) {

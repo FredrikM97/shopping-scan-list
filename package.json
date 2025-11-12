@@ -1,9 +1,9 @@
 {
-  "name": "barcode-card",
+  "name": "grocery-scan-card",
   "type": "module",
   "version": "1.0.0",
-  "description": "Home Assistant card for barcode-based shopping list management",
-  "main": "card/barcode-card.ts",
+  "description": "Home Assistant card for grocery scan management",
+  "main": "src/grocery-scan-card.ts",
   "scripts": {
     "build": "vite build",
     "test": "vitest run",
@@ -12,12 +12,12 @@
     "dev": "vite build",
     "lint": "eslint .",
     "setup": "cd dev && ./dev-setup.sh",
-    "build:ha": "npm run build && cp dist/barcode-card.js dev/config/www/barcode-card.js"
+    "build:ha": "npm run build && cp dist/grocery-scan-card.js dev/config/www/grocery-scan-card.js"
   },
   "keywords": [
     "home-assistant",
-    "barcode",
-    "shopping-list",
+    "grocery-scan",
+    "grocery-scan-card",
     "frontend-card",
     "typescript",
     "card"
@@ -41,6 +41,7 @@
     "jsdom": "^21.1.0",
     "patch-package": "^8.0.1",
     "prettier": "^3.6.2",
+    "terser": "^5.44.1",
     "typescript": "^5.9.3",
     "vite": "^7.2.2",
     "vite-tsconfig-paths": "^5.1.4",

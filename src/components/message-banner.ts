@@ -1,10 +1,9 @@
 import { LitElement, html, css } from "lit";
-
 import { BannerMessage } from "../types";
-
 import { customElement, property } from "lit/decorators.js";
-@customElement("sl-message-banner")
-export class SlMessageBanner extends LitElement {
+
+@customElement("gsc-message-banner")
+export class GscMessageBanner extends LitElement {
   @property({ type: Object }) banner: BannerMessage | null = null;
 
   static styles = css`
@@ -42,6 +41,7 @@ export class SlMessageBanner extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "sl-message-banner": SlMessageBanner;
+    "gsc-message-banner": GscMessageBanner;
   }
 }
+// File renamed from gsc-message-banner.ts to message-banner.ts
