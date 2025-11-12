@@ -27,7 +27,8 @@ export class AddItemPanel extends LitElement {
       width: 100%;
       margin-bottom: 16px;
       padding: 16px 0;
-      background: var(--card-background-color, #fff);
+      background: var(--ha-card-background, var(--card-background-color, #222));
+      color: var(--ha-card-text-color, var(--primary-text-color, #fff));
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
     }
     .input-container {
@@ -43,7 +44,6 @@ export class AddItemPanel extends LitElement {
     ha-button {
       height: 40px;
       align-self: center;
-      /* Match the height of ha-textfield for vertical alignment */
     }
   `;
 

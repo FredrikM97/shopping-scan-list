@@ -63,6 +63,7 @@ export class BarcodeScannerDialog extends LitElement {
       object-fit: contain;
       border-radius: var(--ha-card-border-radius, 8px);
       display: block;
+      background: var(--ha-card-background, var(--card-background-color, #222));
     }
     .button-row {
       display: flex;
@@ -84,7 +85,7 @@ export class BarcodeScannerDialog extends LitElement {
     }
     .scanner-inputs label {
       font-size: 1em;
-      color: var(--ha-card-text-color, var(--primary-text-color, #333));
+      color: var(--ha-card-text-color, var(--primary-text-color, #fff));
       font-weight: 500;
       display: flex;
       flex-direction: column;
@@ -95,8 +96,8 @@ export class BarcodeScannerDialog extends LitElement {
       padding: 10px 12px;
       border-radius: 8px;
       border: 1.5px solid var(--ha-primary-color, #2196f3);
-      background: var(--ha-card-background, var(--card-background-color, #fff));
-      color: var(--ha-card-text-color, var(--primary-text-color, #333));
+      background: var(--ha-card-background, var(--card-background-color, #222));
+      color: var(--ha-card-text-color, var(--primary-text-color, #fff));
       outline: none;
       transition: border-color 0.18s;
       margin-top: 2px;
@@ -299,6 +300,7 @@ export class BarcodeScannerDialog extends LitElement {
         <ha-button type="button" @click=${() => this.closeDialog()}>
           Close
         </ha-button>
+        <span style="display:block; color: var(--error-color, #f44336); font-size: 0.95em; margin-top: 8px;" id="camera-error"></span>
       </span>
     `;
   }

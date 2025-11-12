@@ -28,8 +28,8 @@ export class DialogOverlay extends LitElement {
       width: var(--dialog-overlay-width, 80vw);
       max-width: 800px;
       max-height: 95vh;
-      background: var(--ha-card-background, #fff);
-      color: var(--ha-card-text-color, #222);
+      background: var(--ha-card-background, var(--card-background-color, #222));
+      color: var(--ha-card-text-color, var(--primary-text-color, #fff));
       border-radius: 12px;
       box-shadow: 0 6px 32px 0 rgba(0, 0, 0, 0.18);
       display: flex;
@@ -42,7 +42,7 @@ export class DialogOverlay extends LitElement {
       align-items: center;
       justify-content: space-between;
       padding: 16px 20px 8px 20px;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid #444;
     }
     .dialog-header-title {
       font-size: 1.1em;
@@ -54,7 +54,7 @@ export class DialogOverlay extends LitElement {
     }
     .dialog-header {
       font-size: 1em;
-      color: #666;
+      color: #aaa;
       margin-left: 10px;
     }
     .dialog-content {
@@ -64,7 +64,7 @@ export class DialogOverlay extends LitElement {
     }
     .dialog-footer {
       padding: 10px 20px 16px 20px;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid #444;
       display: flex;
       justify-content: flex-end;
       gap: 10px;
