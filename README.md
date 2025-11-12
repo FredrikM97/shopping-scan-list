@@ -13,7 +13,7 @@
 
 This is a plugin for home assistant to scan items with the barcode to add them to a shopping list. This plugin is based on the todo lists to store information so no other integration is needed.
 
-[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FFredrikM97%2Fgrocery-scan-card)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?repository=grocery-scan-card&owner=FredrikM97&category=plugin)
 
 ## Gallery
 <div align="center">
