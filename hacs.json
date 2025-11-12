@@ -1,7 +1,7 @@
 {
-  "name": "Barcode Card",
+  "name": "ShoppingScan Card",
   "render_readme": true,
-  "filename": "barcode-card.js",
+  "filename": "shopping-scan-card.js",
   "zip_release": true,
   "hide_default_branch": true,
   "homeassistant": "2025.11.0"

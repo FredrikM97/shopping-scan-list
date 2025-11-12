@@ -21,4 +21,12 @@ export function fireEvent(node: HTMLElement, type: string, detail?: any) {
   node.dispatchEvent(event);
 }
 
-export const HA_CARD_REQUIRED_HA_COMPONENTS=["ha-entity-picker", "ha-form", "ha-textfield", "ha-dialog", "ha-button","ha-data-table", "ha-textfield"]
+export const HA_CARD_REQUIRED_HA_COMPONENTS = [
+  "ha-entity-picker",
+  "ha-form",
+  "ha-textfield",
+  "ha-dialog",
+  "ha-button",
+  "ha-data-table",
+  "ha-textfield",
+];

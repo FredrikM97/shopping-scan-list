@@ -1,4 +1,10 @@
-export const SUPPORTED_BARCODE_FORMATS = ["qr_code", "code_128", "ean_13", "code_39", "upc_a"];
+export const SUPPORTED_BARCODE_FORMATS = [
+  "qr_code",
+  "code_128",
+  "ean_13",
+  "code_39",
+  "upc_a",
+];
 export const TODO_CALL_SERVICE = "call_service";
 export const TODO_GET_ITEMS = "get_items";
 export const SHOPPING_LIST_REFRESH_EVENT = "shopping-list-global-refresh";
@@ -28,4 +34,10 @@ const TODO_ADD_ITEM = "add_item";
 const TODO_UPDATE_ITEM = "update_item";
 const TODO_REMOVE_ITEM = "remove_item";
 const TODO_CLEAR_COMPLETED = "clear_completed_items";
-export { TODO_DOMAIN, TODO_ADD_ITEM, TODO_UPDATE_ITEM, TODO_REMOVE_ITEM as TODO_DELETE_ITEM, TODO_CLEAR_COMPLETED };
+export {
+  TODO_DOMAIN,
+  TODO_ADD_ITEM,
+  TODO_UPDATE_ITEM,
+  TODO_REMOVE_ITEM as TODO_DELETE_ITEM,
+  TODO_CLEAR_COMPLETED,
+};

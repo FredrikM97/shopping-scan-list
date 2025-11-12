@@ -24,7 +24,6 @@ export interface Product {
   source?: string;
 }
 
-
 export class BannerMessage {
   type: "error" | "success";
   message: string;
@@ -40,8 +39,8 @@ export class BannerMessage {
   }
 }
 export enum ShoppingListStatus {
-  NeedsAction = 'needs_action',
-  Completed = 'completed',
+  NeedsAction = "needs_action",
+  Completed = "completed",
 }
 export interface ShoppingListItem {
   id: string;

@@ -1,12 +1,12 @@
 import { LitElement, html, css } from "lit";
 import { property, state } from "lit/decorators.js";
-import { SHOPPING_LIST_REFRESH_EVENT } from "../const";
+import { SHOPPING_LIST_REFRESH_EVENT } from "../const.js";
 import { translate } from "../translations/translations.js";
 import { ShoppingListService } from "../services/item-service.js";
 import { fireEvent } from "../common.js";
-import type { ShoppingListItem } from "../types";
-import { BannerMessage } from "../types";
-import "./sl-message-banner";
+import type { ShoppingListItem } from "../types.js";
+import { BannerMessage } from "../types.js";
+import "./sl-message-banner.js";
 
 /**
  * <add-item-panel>
@@ -57,7 +57,7 @@ export class AddItemPanel extends LitElement {
 
   async _onAddItem() {
     if (!this.todoListService || !this.inputValue || !this.entityId) {
-      this.banner = BannerMessage.error('Name is required.');
+      this.banner = BannerMessage.error("Name is required.");
       return;
     }
     try {
@@ -69,7 +69,7 @@ export class AddItemPanel extends LitElement {
       this.closePanel();
       fireEvent(this, SHOPPING_LIST_REFRESH_EVENT);
     } catch (e: any) {
-      const msg = e?.message || 'Failed to add item';
+      const msg = e?.message || "Failed to add item";
       this.banner = BannerMessage.error(msg);
     }
   }
@@ -88,7 +88,10 @@ export class AddItemPanel extends LitElement {
           <ha-textfield
             label="${translate("shopping_list.add_item") ?? "Add item"}"
             .value=${this.inputValue}
-            @input=${(e: any) => { this.inputValue = e.target.value; this.banner = null; }}
+            @input=${(e: any) => {
+              this.inputValue = e.target.value;
+              this.banner = null;
+            }}
             @keydown=${(e: KeyboardEvent) => {
               if (e.key === "Enter") this._onAddItem();
             }}
@@ -98,7 +101,10 @@ export class AddItemPanel extends LitElement {
             type="number"
             min="1"
             .value=${String(this.inputCount)}
-            @input=${(e: any) => { this.inputCount = Number(e.target.value); this.banner = null; }}
+            @input=${(e: any) => {
+              this.inputCount = Number(e.target.value);
+              this.banner = null;
+            }}
             style="width: 60px;"
           ></ha-textfield>
           <ha-button @click=${this._onAddItem}>

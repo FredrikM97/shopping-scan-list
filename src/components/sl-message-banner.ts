@@ -30,8 +30,11 @@ export class SlMessageBanner extends LitElement {
 
   render() {
     return html`
-      <div class="message ${this.banner?.type ?? 'error'}" style="display:${this.banner?.message ? 'block' : 'none'}">
-        ${this.banner?.message ?? ''}
+      <div
+        class="message ${this.banner?.type ?? "error"}"
+        style="display:${this.banner?.message ? "block" : "none"}"
+      >
+        ${this.banner?.message ?? ""}
       </div>
     `;
   }

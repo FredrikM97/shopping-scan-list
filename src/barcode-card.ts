@@ -36,7 +36,10 @@ export class BarcodeCard extends LitElement {
       padding: var(--ha-card-padding, 0);
       box-shadow: var(--ha-card-box-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
       color: var(--ha-card-text-color, var(--primary-text-color, #333));
-      font-family: var(--ha-font-family, var(--paper-font-body1_-_font-family, system-ui));
+      font-family: var(
+        --ha-font-family,
+        var(--paper-font-body1_-_font-family, system-ui)
+      );
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -54,7 +57,10 @@ export class BarcodeCard extends LitElement {
       margin-top: 12px;
       margin-bottom: 8px;
       overflow: hidden;
-      background: var(--ha-card-background, var(--card-background-color, #fafbfc));
+      background: var(
+        --ha-card-background,
+        var(--card-background-color, #fafbfc)
+      );
       box-sizing: border-box;
     }
     .section-separator {
@@ -63,15 +69,12 @@ export class BarcodeCard extends LitElement {
       border-bottom: 0.5px solid var(--divider-color, #f0f1f3);
       margin-bottom: 12px;
     }
-  
-
-
   `;
 
   constructor() {
-  super();
-  this.productLookup = new ProductLookup();
-  // Don't initialize todoListService here, wait for hass to be set
+    super();
+    this.productLookup = new ProductLookup();
+    // Don't initialize todoListService here, wait for hass to be set
   }
 
   async connectedCallback() {
@@ -81,9 +84,13 @@ export class BarcodeCard extends LitElement {
     if (!this.config?.entity) {
       console.warn("[BarcodeCard] No todo list entity selected in config.");
     } else if (!this._hass?.states?.[this.config.entity]) {
-      console.warn(`[BarcodeCard] Todo list entity '${this.config.entity}' does not exist in Home Assistant.`);
+      console.warn(
+        `[BarcodeCard] Todo list entity '${this.config.entity}' does not exist in Home Assistant.`,
+      );
     } else {
-      console.log(`[BarcodeCard] Todo list entity '${this.config.entity}' is valid and exists.`);
+      console.log(
+        `[BarcodeCard] Todo list entity '${this.config.entity}' is valid and exists.`,
+      );
     }
   }
   async disconnectedCallback() {
@@ -112,12 +119,16 @@ export class BarcodeCard extends LitElement {
   }
   private _handleShowScannerOverlay() {
     const query =
-      this.shadowRoot.querySelector<BarcodeScannerDialog>("sl-scanner-overlay")!;
+      this.shadowRoot.querySelector<BarcodeScannerDialog>(
+        "sl-scanner-overlay",
+      )!;
     query?.openDialog();
   }
 
   private _handleShowAddItemOverlay() {
-    const query = this.shadowRoot.querySelector<AddItemOverlay>("sl-add-item-overlay")!;
+    const query = this.shadowRoot.querySelector<AddItemOverlay>(
+      "sl-add-item-overlay",
+    )!;
     query?.openDialog();
   }
 
@@ -148,17 +159,17 @@ export class BarcodeCard extends LitElement {
             @action-click="${this._handleShowScannerOverlay}"
           ></sl-action-button>
           <sl-action-button
-           icon="mdi:plus"
-            .label="${translate("actions.add_item")}" 
+            icon="mdi:plus"
+            .label="${translate("actions.add_item")}"
             @action-click="${this._handleShowAddItemOverlay}"
           ></sl-action-button>
           <sl-action-button
             icon="mdi:format-list-bulleted"
-            .label="${translate("actions.show_list")}" 
+            .label="${translate("actions.show_list")}"
             @action-click="${this._handleShowShoppingListOverlay}"
           ></sl-action-button>
-  </div>
-  <div class="section-separator"></div>
+        </div>
+        <div class="section-separator"></div>
 
         <!-- Add Item Panel (handles both manual and barcode input) -->
         <!-- Comented out for now. Might look nicer

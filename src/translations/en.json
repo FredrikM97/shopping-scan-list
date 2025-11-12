@@ -35,7 +35,7 @@
     "groups": "Groups",
     "lookup": "Lookup",
     "show_list": "Show List",
-    "add_item":"Add Item"
+    "add_item": "Add Item"
   },
   "add_item": {
     "title": "Add Item Manually"

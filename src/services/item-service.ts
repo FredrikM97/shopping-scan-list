@@ -1,13 +1,20 @@
 /**
  * ShoppingListService - Unified Home Assistant shopping/todo list service
  */
-import { TODO_ADD_ITEM, TODO_CLEAR_COMPLETED, TODO_DOMAIN, TODO_UPDATE_ITEM, TODO_CALL_SERVICE, TODO_GET_ITEMS, TODO_DELETE_ITEM, SHOPPING_LIST_REFRESH_EVENT } from "../const";
+import {
+  TODO_ADD_ITEM,
+  TODO_CLEAR_COMPLETED,
+  TODO_DOMAIN,
+  TODO_UPDATE_ITEM,
+  TODO_CALL_SERVICE,
+  TODO_GET_ITEMS,
+  TODO_DELETE_ITEM,
+  SHOPPING_LIST_REFRESH_EVENT,
+} from "../const";
 import { fireEvent } from "../common";
 import { ShoppingListItem, ShoppingListStatus } from "../types";
 
-
 export class ShoppingListService {
-
   private hass: Record<string, unknown>;
 
   constructor(hass: Record<string, unknown>) {
@@ -20,18 +27,22 @@ export class ShoppingListService {
     itemData: Partial<ShoppingListItem> = {},
   ): Promise<boolean> {
     // Check service availability directly
-    if (!((this.hass as any).services?.[TODO_DOMAIN]?.[TODO_ADD_ITEM])) {
-      console.warn(`[ShoppingListService] addItem failed: '${TODO_DOMAIN}.${TODO_ADD_ITEM}' service not available`, {
-        services: (this.hass as any).services,
-      });
+    if (!(this.hass as any).services?.[TODO_DOMAIN]?.[TODO_ADD_ITEM]) {
+      console.warn(
+        `[ShoppingListService] addItem failed: '${TODO_DOMAIN}.${TODO_ADD_ITEM}' service not available`,
+        {
+          services: (this.hass as any).services,
+        },
+      );
       return false;
     }
 
     // Find existing item by normalized name and barcode
     const items = await this.getItems(entityId);
-    const existing = items.find(item =>
-      this.normalizeString(item.name) === this.normalizeString(name) &&
-      (item.barcode ?? "") === (itemData.barcode ?? "")
+    const existing = items.find(
+      (item) =>
+        this.normalizeString(item.name) === this.normalizeString(name) &&
+        (item.barcode ?? "") === (itemData.barcode ?? ""),
     );
 
     let result = false;
@@ -47,27 +58,35 @@ export class ShoppingListService {
       result = true;
     } else {
       // No existing item: create new
-      result = await this.createNewItem({
-        id: "", // will be set by backend
-        name,
-        status: ShoppingListStatus.NeedsAction,
-        barcode: itemData.barcode ?? "",
-        brand: itemData.brand,
-        count: itemData.count ?? 1,
-        total: itemData.count ?? 1,
-      }, entityId);
+      result = await this.createNewItem(
+        {
+          id: "", // will be set by backend
+          name,
+          status: ShoppingListStatus.NeedsAction,
+          barcode: itemData.barcode ?? "",
+          brand: itemData.brand,
+          count: itemData.count ?? 1,
+          total: itemData.count ?? 1,
+        },
+        entityId,
+      );
     }
-      fireEvent(window as any, SHOPPING_LIST_REFRESH_EVENT, {});
-  
+    fireEvent(window as any, SHOPPING_LIST_REFRESH_EVENT, {});
+
     return result;
   }
 
   // Helper to process item update logic
-  private getUpdatedItem(existing: ShoppingListItem, itemData: Partial<ShoppingListItem>): ShoppingListItem {
+  private getUpdatedItem(
+    existing: ShoppingListItem,
+    itemData: Partial<ShoppingListItem>,
+  ): ShoppingListItem {
     const isCompleted = existing.status === ShoppingListStatus.Completed;
     return {
       ...existing,
-      count: isCompleted ? (itemData.count ?? 1) : (existing.count ?? 0) + (itemData.count ?? 1),
+      count: isCompleted
+        ? (itemData.count ?? 1)
+        : (existing.count ?? 0) + (itemData.count ?? 1),
       total: (existing.total ?? 0) + (itemData.count ?? 1),
       status: isCompleted ? ShoppingListStatus.NeedsAction : existing.status,
     };
@@ -76,7 +95,7 @@ export class ShoppingListService {
   // Helper to create and add a new item
   private async createNewItem(
     item: ShoppingListItem,
-    entityId: string
+    entityId: string,
   ): Promise<boolean> {
     const newDesc = this.itemToDescription(item);
     await (this.hass as any).callService(TODO_DOMAIN, TODO_ADD_ITEM, {
@@ -147,7 +166,9 @@ export class ShoppingListService {
         status: completedItem.status,
         description: newDesc,
       });
-      fireEvent(window as any, SHOPPING_LIST_REFRESH_EVENT, { item: completedItem });
+      fireEvent(window as any, SHOPPING_LIST_REFRESH_EVENT, {
+        item: completedItem,
+      });
       return true;
     } catch (error) {
       return false;
@@ -157,29 +178,41 @@ export class ShoppingListService {
   async clearCompleted(entityId: string): Promise<boolean> {
     try {
       const items: ShoppingListItem[] = await this.getItems(entityId);
-      await Promise.all(items.filter(i => i.status === ShoppingListStatus.Completed).map(async item => {
-        const clearedItem: ShoppingListItem = {
-          ...item,
-          count: 0,
-          status: ShoppingListStatus.NeedsAction,
-        };
-        const newDesc = this.itemToDescription(clearedItem);
-        await (this.hass as any).callService(TODO_DOMAIN, TODO_UPDATE_ITEM, {
-          entity_id: entityId,
-          item: item.id,
-          description: newDesc,
-          status: clearedItem.status,
-        });
-      }));
+      await Promise.all(
+        items
+          .filter((i) => i.status === ShoppingListStatus.Completed)
+          .map(async (item) => {
+            const clearedItem: ShoppingListItem = {
+              ...item,
+              count: 0,
+              status: ShoppingListStatus.NeedsAction,
+            };
+            const newDesc = this.itemToDescription(clearedItem);
+            await (this.hass as any).callService(
+              TODO_DOMAIN,
+              TODO_UPDATE_ITEM,
+              {
+                entity_id: entityId,
+                item: item.id,
+                description: newDesc,
+                status: clearedItem.status,
+              },
+            );
+          }),
+      );
       // Optionally call clear_completed_items if needed
       const availableServices = (this.hass as any).services || {};
       if (
         availableServices[TODO_DOMAIN] &&
         availableServices[TODO_DOMAIN][TODO_CLEAR_COMPLETED]
       ) {
-        await (this.hass as any).callService(TODO_DOMAIN, TODO_CLEAR_COMPLETED, {
-          entity_id: entityId,
-        });
+        await (this.hass as any).callService(
+          TODO_DOMAIN,
+          TODO_CLEAR_COMPLETED,
+          {
+            entity_id: entityId,
+          },
+        );
       }
       return true;
     } catch (error) {
@@ -187,16 +220,16 @@ export class ShoppingListService {
     }
   }
   async removeItem(itemId: string, entityId: string): Promise<boolean> {
-  try {
-    await (this.hass as any).callService(TODO_DOMAIN, TODO_DELETE_ITEM, {
-      entity_id: entityId,
-      item: itemId, // UID or name
-    });
-    fireEvent(window as any, SHOPPING_LIST_REFRESH_EVENT, { item: itemId });
-    return true;
-  } catch (error) {
-    console.error("[ShoppingListService] removeItem failed", error);
-    return false;
+    try {
+      await (this.hass as any).callService(TODO_DOMAIN, TODO_DELETE_ITEM, {
+        entity_id: entityId,
+        item: itemId, // UID or name
+      });
+      fireEvent(window as any, SHOPPING_LIST_REFRESH_EVENT, { item: itemId });
+      return true;
+    } catch (error) {
+      console.error("[ShoppingListService] removeItem failed", error);
+      return false;
+    }
   }
-}
 }

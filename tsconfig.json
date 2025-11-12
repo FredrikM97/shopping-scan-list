@@ -20,6 +20,6 @@
     "declaration": false,
     "outDir": "./dist"
   },
-  "include": ["card/**/*"],
-  "exclude": ["node_modules", "dist", "tests"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "tests", "dev"]
 }

@@ -1,6 +1,6 @@
 import { LitElement, html, css } from "lit";
 import { property, state } from "lit/decorators.js";
-import { SHOPPING_LIST_REFRESH_EVENT } from "../const";
+import { SHOPPING_LIST_REFRESH_EVENT } from "../const.js";
 import { translate } from "../translations/translations.js";
 import { ShoppingListService } from "../services/item-service.js";
 import { fireEvent } from "../common.js";
@@ -38,15 +38,20 @@ export class QuickChipsPanel extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this._windowRefreshListener = () => this._refreshChips();
-    window.addEventListener(SHOPPING_LIST_REFRESH_EVENT, this._windowRefreshListener);
+    window.addEventListener(
+      SHOPPING_LIST_REFRESH_EVENT,
+      this._windowRefreshListener,
+    );
     setTimeout(() => this._refreshChips(), 0);
-}
-
-  disconnectedCallback() {
-  window.removeEventListener(SHOPPING_LIST_REFRESH_EVENT, this._windowRefreshListener);
-  super.disconnectedCallback();
   }
 
+  disconnectedCallback() {
+    window.removeEventListener(
+      SHOPPING_LIST_REFRESH_EVENT,
+      this._windowRefreshListener,
+    );
+    super.disconnectedCallback();
+  }
 
   async _refreshChips() {
     if (
@@ -60,14 +65,23 @@ export class QuickChipsPanel extends LitElement {
   }
   private async _handleChipClick(e: Event) {
     const target = e.currentTarget as HTMLElement;
-    const productName = target.getAttribute("data-product") || target.textContent || "";
+    const productName =
+      target.getAttribute("data-product") || target.textContent || "";
 
     if (this.todoListService && this.entityId && productName) {
       try {
-        const result = await this.todoListService.addItem(productName, this.entityId);
+        const result = await this.todoListService.addItem(
+          productName,
+          this.entityId,
+        );
         // Refresh the shopping list after quick add
-        const shoppingListEl = (this.getRootNode() as any).querySelector?.("sl-shopping-list");
-        if (shoppingListEl && typeof (shoppingListEl as any).refresh === "function") {
+        const shoppingListEl = (this.getRootNode() as any).querySelector?.(
+          "sl-shopping-list",
+        );
+        if (
+          shoppingListEl &&
+          typeof (shoppingListEl as any).refresh === "function"
+        ) {
           (shoppingListEl as any).refresh();
         }
         fireEvent(this, SHOPPING_LIST_REFRESH_EVENT, { item: result });
@@ -80,11 +94,14 @@ export class QuickChipsPanel extends LitElement {
         });
       }
     } else {
-      console.warn("[QuickChipsPanel] Quick add failed: missing todoListService, entityId, or productName", {
-        todoListService: this.todoListService,
-        entityId: this.entityId,
-        productName,
-      });
+      console.warn(
+        "[QuickChipsPanel] Quick add failed: missing todoListService, entityId, or productName",
+        {
+          todoListService: this.todoListService,
+          entityId: this.entityId,
+          productName,
+        },
+      );
     }
   }
 
@@ -104,7 +121,11 @@ export class QuickChipsPanel extends LitElement {
         </div>
         <div class="chips-container">
           ${sortedChips.length === 0
-            ? html`<span style="color: var(--secondary-text-color, #888); font-size: 0.95em;">${translate("quick_add.empty") ?? "No quick add suggestions yet. Add items manually to build your quick add list!"}</span>`
+            ? html`<span
+                style="color: var(--secondary-text-color, #888); font-size: 0.95em;"
+                >${translate("quick_add.empty") ??
+                "No quick add suggestions yet. Add items manually to build your quick add list!"}</span
+              >`
             : sortedChips.map(
                 (item) => html`
                   <ha-button

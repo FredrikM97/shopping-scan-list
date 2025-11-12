@@ -16,12 +16,14 @@ declare global {
 
   class BarcodeDetector {
     constructor(options?: { formats?: string[] });
-    detect(source: ImageBitmapSource): Promise<Array<{
-      boundingBox: DOMRectReadOnly;
-      rawValue: string;
-      format: string;
-      cornerPoints: Array<{ x: number; y: number }>;
-    }>>;
+    detect(source: ImageBitmapSource): Promise<
+      Array<{
+        boundingBox: DOMRectReadOnly;
+        rawValue: string;
+        format: string;
+        cornerPoints: Array<{ x: number; y: number }>;
+      }>
+    >;
     static getSupportedFormats(): Promise<string[]>;
   }
 }
@@ -34,7 +36,7 @@ export class BarcodeScannerDialog extends LitElement {
   @state() editState = { name: "", brand: "", barcode: "" };
   @state() apiProduct = null;
   @state() banner: BannerMessage | null = null;
-  
+
   @property({ type: Object }) serviceState = {
     hass: null,
     todoListService: null,
@@ -97,14 +99,14 @@ export class BarcodeScannerDialog extends LitElement {
     }
     .scanner-inputs input[type="text"]:focus {
       border-color: var(--ha-secondary-color, #1976d2);
-      box-shadow: 0 0 0 2px rgba(33,150,243,0.08);
+      box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.08);
     }
   `;
 
   constructor() {
     super();
   }
-  
+
   createEditProduct(product, barcode) {
     return {
       name: product && product.name ? product.name : "",
@@ -114,13 +116,15 @@ export class BarcodeScannerDialog extends LitElement {
   }
 
   async updated(changed: Map<string, unknown>) {
-  if (changed.has("serviceState")) {
+    if (changed.has("serviceState")) {
       // Defensive: ensure required fields are present
       if (!this.serviceState.todoListService) {
-        console.error('[ScannerOverlay] todoListService is null, cannot add item');
+        console.error(
+          "[ScannerOverlay] todoListService is null, cannot add item",
+        );
       }
       if (!this.serviceState.entityId) {
-        console.error('[ScannerOverlay] entityId is null, cannot add item');
+        console.error("[ScannerOverlay] entityId is null, cannot add item");
       }
       if (!this.serviceState.productLookup) {
         this.serviceState.productLookup = new ProductLookup();
@@ -141,29 +145,31 @@ export class BarcodeScannerDialog extends LitElement {
     if (this.open) await this.startScanner();
   }
 
-
   public closeDialog() {
     this.stopScanner();
     this.open = false;
   }
 
   async startScanner() {
-    if (!('BarcodeDetector' in window)) {
-      console.error('BarcodeDetector not supported in this browser');
+    if (!("BarcodeDetector" in window)) {
+      console.error("BarcodeDetector not supported in this browser");
       return;
     }
     await this.updateComplete;
-    this.video = this.shadowRoot!.querySelector('video') as HTMLVideoElement;
+    this.video = this.shadowRoot!.querySelector("video") as HTMLVideoElement;
     if (!this.video) {
-      console.error('Video element not found');
+      console.error("Video element not found");
       return;
     }
-    this.video.srcObject = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    this.video.srcObject = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false,
+    });
     try {
       await this.video.play();
     } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.error('Video play failed', err);
+      if (err.name !== "AbortError") {
+        console.error("Video play failed", err);
       }
     }
     this.detector = new BarcodeDetector({ formats: SUPPORTED_BARCODE_FORMATS });
@@ -182,10 +188,10 @@ export class BarcodeScannerDialog extends LitElement {
         () => {
           this.apiProduct = null;
           this.editState = this.createEditProduct(null, barcode);
-        }
+        },
       );
     } catch (err) {
-      console.error('Product lookup failed', err);
+      console.error("Product lookup failed", err);
     }
     this.stopScanner();
   }
@@ -209,36 +215,39 @@ export class BarcodeScannerDialog extends LitElement {
       }
       await this.handleBarcode(rawValue, format);
     } catch (err) {
-      console.error('Barcode detection failed', err);
+      console.error("Barcode detection failed", err);
       requestAnimationFrame(this.detectLoop);
     }
-  }
+  };
 
   private async _addToList() {
     if (!this.editState.name || !this.editState.brand) {
-      this.banner = BannerMessage.error('Name and brand are required.');
+      this.banner = BannerMessage.error("Name and brand are required.");
       return;
     }
     if (!this.serviceState.todoListService || !this.serviceState.entityId) {
-      this.banner = BannerMessage.error('Service or entity ID missing.');
+      this.banner = BannerMessage.error("Service or entity ID missing.");
       return;
     }
     try {
-  const result = await this.serviceState.todoListService.addItem(this.editState.name, this.serviceState.entityId, this.editState);
-  // Item added to todo list
-  this.closeDialog();
+      const result = await this.serviceState.todoListService.addItem(
+        this.editState.name,
+        this.serviceState.entityId,
+        this.editState,
+      );
+      // Item added to todo list
+      this.closeDialog();
     } catch (e: any) {
-      const msg = e?.message || 'Failed to add item';
+      const msg = e?.message || "Failed to add item";
       this.banner = BannerMessage.error(msg);
     }
   }
-
 
   stopScanner() {
     if (this.video && this.video.srcObject) {
       this.video.pause();
       const stream = this.video.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach((track) => track.stop());
       this.video.srcObject = null;
     }
   }
@@ -264,20 +273,28 @@ export class BarcodeScannerDialog extends LitElement {
   private renderBarcodeInfoView() {
     return html`
       <span slot="title">Product Details</span>
-  <span slot="header">Detected: ${this.scanState.barcode} (${this.scanState.format})</span>
- 
-        <div class="scanner-inputs">
-          <ha-textfield
-            label="Name"
-            value=${this.editState.name}
-            @input=${(e: any) => { this.editState = { ...this.editState, name: e.target.value }; this.banner = null; }}
-          ></ha-textfield>
-          <ha-textfield
-            label="Brand"
-            value=${this.editState.brand}
-            @input=${(e: any) => { this.editState = { ...this.editState, brand: e.target.value }; this.banner = null; }}
-          ></ha-textfield>
-        </div>
+      <span slot="header"
+        >Detected: ${this.scanState.barcode} (${this.scanState.format})</span
+      >
+
+      <div class="scanner-inputs">
+        <ha-textfield
+          label="Name"
+          value=${this.editState.name}
+          @input=${(e: any) => {
+            this.editState = { ...this.editState, name: e.target.value };
+            this.banner = null;
+          }}
+        ></ha-textfield>
+        <ha-textfield
+          label="Brand"
+          value=${this.editState.brand}
+          @input=${(e: any) => {
+            this.editState = { ...this.editState, brand: e.target.value };
+            this.banner = null;
+          }}
+        ></ha-textfield>
+      </div>
 
       <span slot="footer">
         <ha-button type="button" @click=${() => this._addToList()}>
@@ -292,14 +309,21 @@ export class BarcodeScannerDialog extends LitElement {
 
   render() {
     const isBarcodeDetected = !!this.scanState.barcode;
-    const view = isBarcodeDetected ? this.renderBarcodeInfoView() : this.renderVideoView();
+    const view = isBarcodeDetected
+      ? this.renderBarcodeInfoView()
+      : this.renderVideoView();
     return html`
-      <sl-dialog-overlay .open=${this.open} width="400px" minWidth="400px" maxWidth="400px">
+      <sl-dialog-overlay
+        .open=${this.open}
+        width="400px"
+        minWidth="400px"
+        maxWidth="400px"
+      >
         <sl-message-banner .banner=${this.banner}></sl-message-banner>
         ${view}
       </sl-dialog-overlay>
     `;
-  }  
+  }
 }
 
 customElements.define("sl-scanner-overlay", BarcodeScannerDialog);

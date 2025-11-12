@@ -46,7 +46,7 @@ export class SlDialogOverlay extends LitElement {
       background: var(--ha-card-background, #fff);
       color: var(--ha-card-text-color, #222);
       border-radius: 12px;
-      box-shadow: 0 6px 32px 0 rgba(0,0,0,0.18);
+      box-shadow: 0 6px 32px 0 rgba(0, 0, 0, 0.18);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -93,17 +93,18 @@ export class SlDialogOverlay extends LitElement {
     }
   `;
 
-
   private _resizeObserver?: ResizeObserver;
 
   connectedCallback() {
     super.connectedCallback();
     this._resizeObserver = new ResizeObserver(() => {
-      this.dispatchEvent(new CustomEvent('dialog-resized', { bubbles: true, composed: true }));
+      this.dispatchEvent(
+        new CustomEvent("dialog-resized", { bubbles: true, composed: true }),
+      );
     });
     // Observe the wrapper after first render
     this.updateComplete.then(() => {
-      const wrapper = this.shadowRoot?.querySelector('.dialog-wrapper');
+      const wrapper = this.shadowRoot?.querySelector(".dialog-wrapper");
       if (wrapper) this._resizeObserver?.observe(wrapper);
     });
   }
