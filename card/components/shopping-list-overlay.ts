@@ -16,8 +16,6 @@ export class ShoppingListOverlay extends LitElement {
 
   @state() private open = false;
   @state() private items: ShoppingListItem[] = [];
-  @state() private errorMessage: string = "";
-  @state() private successMessage: string = "";
 
   static styles = [
     css`
@@ -30,25 +28,9 @@ export class ShoppingListOverlay extends LitElement {
         max-height: 100%;
         overflow: auto;
       }
-      .message.error-message {
-        background: #ffebee;
-        color: #c62828;
-        padding: 6px 10px;
-        border-radius: 6px;
-        margin: 8px 0;
-        text-align: center;
-      }
-      .message.success-message {
-        background: #e8f5e8;
-        color: #2e7d32;
-        padding: 6px 10px;
-        border-radius: 6px;
-        margin: 8px 0;
-        text-align: center;
-      }
       sl-dialog-overlay::part(dialog-wrapper) {
-        min-height: 600px;
-        max-height: 95vh;
+        min-height: 700px;
+        max-height: 99vh;
         min-width: 600px;
         max-width: 98vw;
       }
@@ -132,16 +114,14 @@ export class ShoppingListOverlay extends LitElement {
     this.open = false;
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-  }
 
   private async _loadItems() {
     if (this.listManager && this.entityId) {
       try {
         this.items = await this.listManager.getItems(this.entityId);
+        this.dispatchEvent(new CustomEvent('clear-banner-message', { bubbles: true, composed: true }));
       } catch (error) {
-        this._showError("Failed to load shopping list items");
+        this.dispatchEvent(new CustomEvent('show-banner-message', { detail: { type: 'error', message: "Failed to load shopping list items" }, bubbles: true, composed: true }));
       }
     }
   }
@@ -151,8 +131,9 @@ export class ShoppingListOverlay extends LitElement {
       await this.listManager.toggleComplete(itemId, this.entityId);
       await this._loadItems();
       fireEvent(this, SHOPPING_LIST_REFRESH_EVENT);
+      this.dispatchEvent(new CustomEvent('show-banner-message', { detail: { type: 'success', message: translate("shopping_list.item_updated") ?? "Item updated" }, bubbles: true, composed: true }));
     } catch (error) {
-      this._showError(translate("errors.item_update_failed"));
+      this.dispatchEvent(new CustomEvent('show-banner-message', { detail: { type: 'error', message: translate("errors.item_update_failed") }, bubbles: true, composed: true }));
     }
   }
 
@@ -162,19 +143,20 @@ export class ShoppingListOverlay extends LitElement {
       await this.listManager.removeItem(itemId, this.entityId);
       await this._loadItems();
       fireEvent(this, SHOPPING_LIST_REFRESH_EVENT);
+      this.dispatchEvent(new CustomEvent('show-banner-message', { detail: { type: 'success', message: translate("shopping_list.item_removed") ?? "Item removed" }, bubbles: true, composed: true }));
     } catch (error) {
-      this._showError(translate("errors.item_remove_failed"));
+      this.dispatchEvent(new CustomEvent('show-banner-message', { detail: { type: 'error', message: translate("errors.item_remove_failed") }, bubbles: true, composed: true }));
     }
   }
 
-  _showError(message: string) {
-    this.errorMessage = message;
-    this.successMessage = "";
+  private _onDialogResized() {
+    // Force ha-data-table to recalculate layout on dialog resize
+    const table = this.renderRoot?.querySelector('ha-data-table');
+    if (table && typeof (table as any).resize === 'function') {
+      (table as any).resize();
+    }
   }
-  _showSuccess(message: string) {
-    this.successMessage = message;
-    this.errorMessage = "";
-  }
+
   render() {
     console.log("[ShoppingListOverlay] render called, open:", this.open);
     if (!this.open) {
@@ -184,16 +166,12 @@ export class ShoppingListOverlay extends LitElement {
       ? this.items.filter((item) => item && item.status === ShoppingListStatus.NeedsAction)
       : [];
     return html`
-      <sl-dialog-overlay .open=${this.open}>
+      <sl-dialog-overlay .open=${this.open} @dialog-resized=${this._onDialogResized} maxHeight="99vh">
         <span slot="title">${translate("shopping_list.title")} (${data.length} to buy)</span>
         <span slot="header">${translate("shopping_list.subtitle") ?? ""}</span>
         <div>
-          ${this.errorMessage
-            ? html`<div class="message error-message">${this.errorMessage}</div>`
-            : ""}
-          ${this.successMessage
-            ? html`<div class="message success-message">${this.successMessage}</div>`
-            : ""}
+          <sl-message-banner type="error"></sl-message-banner>
+          <sl-message-banner type="success"></sl-message-banner>
           <ha-data-table
             .columns=${this.getColumns()}
             .data=${data}

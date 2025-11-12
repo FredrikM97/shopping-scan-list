@@ -5,16 +5,19 @@ import { translate } from "../translations/translations.js";
 import { ShoppingListService } from "../services/item-service.js";
 import { fireEvent } from "../common.js";
 import type { ShoppingListItem } from "../types";
+import { BannerMessage } from "../types";
+import "./sl-message-banner";
 
 /**
  * <add-item-panel>
  * Centralized add-item logic for barcode, manual, and quick add
  */
-export class InputPanel extends LitElement {
+export class AddItemPanel extends LitElement {
   @property({ type: Object }) todoListService: ShoppingListService = null;
   @property({ type: String }) entityId: string = "";
   @state() private inputValue: string = "";
   @state() private inputCount: number = 1;
+  @state() private banner: BannerMessage | null = null;
 
   static styles = css`
     .add-item-panel {
@@ -54,7 +57,7 @@ export class InputPanel extends LitElement {
 
   async _onAddItem() {
     if (!this.todoListService || !this.inputValue || !this.entityId) {
-      console.error("No todo list integration or product name.");
+      this.banner = BannerMessage.error('Name is required.');
       return;
     }
     try {
@@ -62,44 +65,44 @@ export class InputPanel extends LitElement {
         name: this.inputValue,
         count: this.inputCount,
       };
-      const result = await this.todoListService.addItem(
-        this.inputValue,
-        this.entityId,
-        item,
-      );
-      if (!result) {
-        console.error("Failed to add item to todo list");
-      }
-    } catch (error) {
-      console.error("Failed to add item to todo list", error);
+      await this.todoListService.addItem(this.inputValue, this.entityId, item);
+      this.closePanel();
+      fireEvent(this, SHOPPING_LIST_REFRESH_EVENT);
+    } catch (e: any) {
+      const msg = e?.message || 'Failed to add item';
+      this.banner = BannerMessage.error(msg);
     }
+  }
+
+  closePanel() {
+    this.inputValue = "";
+    this.inputCount = 1;
+    this.banner = null;
   }
 
   render() {
     return html`
       <div class="add-item-panel">
+        <sl-message-banner .banner=${this.banner}></sl-message-banner>
         <div class="input-container">
           <ha-textfield
-            type="text"
-            .value="${this.inputValue}"
-            placeholder="${translate("editor.placeholders.item") ?? "Enter product name"}"
-            @input="${(e: any) => {
-              this.inputValue = e.target.value;
-            }}"
+            label="${translate("shopping_list.add_item") ?? "Add item"}"
+            .value=${this.inputValue}
+            @input=${(e: any) => { this.inputValue = e.target.value; this.banner = null; }}
+            @keydown=${(e: KeyboardEvent) => {
+              if (e.key === "Enter") this._onAddItem();
+            }}
           ></ha-textfield>
           <ha-textfield
+            label="${translate("shopping_list.count") ?? "Count"}"
             type="number"
             min="1"
-            .value="${String(this.inputCount)}"
-            placeholder="Count"
-            @input="${(e: any) => {
-              this.inputCount = Number(e.target.value);
-            }}"
+            .value=${String(this.inputCount)}
+            @input=${(e: any) => { this.inputCount = Number(e.target.value); this.banner = null; }}
+            style="width: 60px;"
           ></ha-textfield>
-          <ha-button
-            @click="${() => this._onAddItem()}"
-          >
-            ${translate("editor.labels.add_button")}
+          <ha-button @click=${this._onAddItem}>
+            ${translate("shopping_list.add") ?? "Add"}
           </ha-button>
         </div>
       </div>
@@ -107,4 +110,4 @@ export class InputPanel extends LitElement {
   }
 }
 
-customElements.define("sl-input-panel", InputPanel);
+customElements.define("sl-add-item-panel", AddItemPanel);

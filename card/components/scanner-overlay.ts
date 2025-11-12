@@ -2,6 +2,8 @@ import { loadHaComponents } from "@kipk/load-ha-components";
 import { LitElement, html, css } from "lit";
 import { property, state } from "lit/decorators.js";
 import { fireEvent } from "../common";
+import { BannerMessage } from "../types";
+import "./sl-message-banner";
 import { ProductLookup } from "../services/product-service";
 import { SUPPORTED_BARCODE_FORMATS } from "../const";
 import "./sl-dialog-overlay";
@@ -25,12 +27,13 @@ declare global {
 }
 
 export class BarcodeScannerDialog extends LitElement {
+  private video: HTMLVideoElement | null = null;
+  private detector: BarcodeDetector | null = null;
   @state() open = false;
   @state() scanState = { barcode: "", format: "" };
   @state() editState = { name: "", brand: "", barcode: "" };
   @state() apiProduct = null;
-  private stream: MediaStream | null = null;
-  private detector: BarcodeDetector | null = null;
+  @state() banner: BannerMessage | null = null;
   
   @property({ type: Object }) serviceState = {
     hass: null,
@@ -40,28 +43,20 @@ export class BarcodeScannerDialog extends LitElement {
   };
 
   static styles = css`
+    .video-container {
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
     video {
       width: 100%;
+      height: 100%;
+      object-fit: contain;
       border-radius: var(--ha-card-border-radius, 8px);
-      background: var(--ha-card-background, var(--card-background-color, #fff));
-      box-shadow: var(--ha-card-box-shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
-    }
-    p {
-      font-size: 1.1em;
-      text-align: center;
-      margin-top: 8px;
-      color: var(--ha-card-text-color, var(--primary-text-color, #333));
-    }
-    input {
-      font-size: 1em;
-      padding: 8px;
-      border-radius: var(--ha-action-border-radius, 6px);
-      border: 1px solid var(--ha-primary-color, #2196f3);
-      background: var(--ha-card-background, var(--card-background-color, #fff));
-      color: var(--ha-card-text-color, var(--primary-text-color, #333));
-      width: 90%;
-      margin-bottom: 8px;
-      box-sizing: border-box;
+      display: block;
     }
     .button-row {
       display: flex;
@@ -69,6 +64,40 @@ export class BarcodeScannerDialog extends LitElement {
       gap: 12px;
       margin-top: 16px;
       justify-content: center;
+    }
+    .scanner-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 18px 0 0 0;
+      align-items: stretch;
+    }
+    .scanner-inputs ha-textfield {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .scanner-inputs label {
+      font-size: 1em;
+      color: var(--ha-card-text-color, var(--primary-text-color, #333));
+      font-weight: 500;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .scanner-inputs input[type="text"] {
+      font-size: 1em;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1.5px solid var(--ha-primary-color, #2196f3);
+      background: var(--ha-card-background, var(--card-background-color, #fff));
+      color: var(--ha-card-text-color, var(--primary-text-color, #333));
+      outline: none;
+      transition: border-color 0.18s;
+      margin-top: 2px;
+    }
+    .scanner-inputs input[type="text"]:focus {
+      border-color: var(--ha-secondary-color, #1976d2);
+      box-shadow: 0 0 0 2px rgba(33,150,243,0.08);
     }
   `;
 
@@ -85,7 +114,7 @@ export class BarcodeScannerDialog extends LitElement {
   }
 
   async updated(changed: Map<string, unknown>) {
-    if (changed.has("serviceState")) {
+  if (changed.has("serviceState")) {
       // Defensive: ensure required fields are present
       if (!this.serviceState.todoListService) {
         console.error('[ScannerOverlay] todoListService is null, cannot add item');
@@ -99,12 +128,11 @@ export class BarcodeScannerDialog extends LitElement {
     }
     if (changed.has("open")) {
       if (this.open) await this.startScanner();
-      else this.stopScanner();
+      else await this.stopScanner();
     }
   }
 
   public async openDialog() {
-    console.log("[ScannerOverlay] openDialog called");
     // Reset state to clear previous scan
     this.scanState = { barcode: "", format: "" };
     this.editState = { name: "", brand: "", barcode: "" };
@@ -115,169 +143,163 @@ export class BarcodeScannerDialog extends LitElement {
 
 
   public closeDialog() {
-    console.log("[ScannerOverlay] closeDialog called");
     this.stopScanner();
     this.open = false;
   }
 
   async startScanner() {
-    console.log("[ScannerOverlay] startScanner called");
-    if (!("BarcodeDetector" in window)) {
-      console.error("BarcodeDetector not supported in this browser");
+    if (!('BarcodeDetector' in window)) {
+      console.error('BarcodeDetector not supported in this browser');
       return;
     }
-
-    await this.updateComplete; // Wait for render
-    const video = this.shadowRoot!.querySelector("video") as HTMLVideoElement;
-    if (!video) {
-      console.error("Video element not found");
+    await this.updateComplete;
+    this.video = this.shadowRoot!.querySelector('video') as HTMLVideoElement;
+    if (!this.video) {
+      console.error('Video element not found');
       return;
     }
-    this.stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = this.stream;
+    this.video.srcObject = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     try {
-      await video.play();
+      await this.video.play();
     } catch (err) {
-      if (err.name !== "AbortError") {
-        console.error("Video play failed", err);
+      if (err.name !== 'AbortError') {
+        console.error('Video play failed', err);
       }
-      // Ignore AbortError, it's expected if play is interrupted
     }
-    console.log("[ScannerOverlay] Video stream started");
+    this.detector = new BarcodeDetector({ formats: SUPPORTED_BARCODE_FORMATS });
+    this.detectLoop();
+  }
 
-    this.detector = new BarcodeDetector({
-      formats: SUPPORTED_BARCODE_FORMATS,
-    });
+  private async handleBarcode(barcode: string, format: string) {
+    this.scanState = { barcode, format };
+    try {
+      await this.serviceState.productLookup.lookupBarcode(
+        barcode,
+        (product: any) => {
+          this.apiProduct = product;
+          this.editState = this.createEditProduct(product, barcode);
+        },
+        () => {
+          this.apiProduct = null;
+          this.editState = this.createEditProduct(null, barcode);
+        }
+      );
+    } catch (err) {
+      console.error('Product lookup failed', err);
+    }
+    this.stopScanner();
+  }
 
-    const handleBarcode = async (barcode: string, format: string) => {
-      this.scanState = { barcode, format };
-      console.log(`[ScannerOverlay] Detected barcode: ${barcode} (format: ${format})`);
-      console.log(`[ScannerOverlay] Starting product lookup for barcode: ${barcode}`);
-      try {
-        await this.serviceState.productLookup.lookupBarcode(
-          barcode,
-          (product: any) => {
-            this.apiProduct = product;
-            this.editState = this.createEditProduct(product, barcode);
-         
-          },
-          (barcode: string) => {
-            this.apiProduct = null;
-            this.editState = this.createEditProduct(null, barcode);
-          }
-        );
-      } catch (err) {
-        console.error("Product lookup failed", err);
+  private detectLoop = async () => {
+    if (!this.open || !this.detector) return;
+    try {
+      if (this.video.readyState < 2 || !this.video.srcObject) {
+        requestAnimationFrame(this.detectLoop);
+        return;
       }
-      this.stopScanner();
-    };
-
-    const detectLoop = async () => {
-      if (!this.open || !this.detector) return;
-      try {
-        // Only try to detect if video is ready and has a stream
-        if (video.readyState < 2 || !video.srcObject) {
-          requestAnimationFrame(detectLoop);
-          return;
-        }
-        const barcodes = await this.detector.detect(video);
-        if (barcodes.length === 0) {
-          requestAnimationFrame(detectLoop);
-          return;
-        }
-        const { rawValue, format } = barcodes[0];
-        if (rawValue === this.scanState.barcode) {
-          requestAnimationFrame(detectLoop);
-          return;
-        }
-        await handleBarcode(rawValue, format);
-        // After handling, don't continue loop (dialog closes or scanner stops)
-      } catch (err) {
-        console.error("Barcode detection failed", err);
-        requestAnimationFrame(detectLoop);
+      const barcodes = await this.detector.detect(this.video);
+      if (!barcodes.length) {
+        requestAnimationFrame(this.detectLoop);
+        return;
       }
-    };
-
-    detectLoop();
+      const { rawValue, format } = barcodes[0];
+      if (rawValue === this.scanState.barcode) {
+        requestAnimationFrame(this.detectLoop);
+        return;
+      }
+      await this.handleBarcode(rawValue, format);
+    } catch (err) {
+      console.error('Barcode detection failed', err);
+      requestAnimationFrame(this.detectLoop);
+    }
   }
 
   private async _addToList() {
-    const result = await this.serviceState.todoListService.addItem(this.editState.name, this.serviceState.entityId, this.editState);
-    console.log(`[ScannerOverlay] Added to todo list:`, { product: this.editState, entityId: this.serviceState.entityId, result });
-    this.closeDialog();
+    if (!this.editState.name || !this.editState.brand) {
+      this.banner = BannerMessage.error('Name and brand are required.');
+      return;
+    }
+    if (!this.serviceState.todoListService || !this.serviceState.entityId) {
+      this.banner = BannerMessage.error('Service or entity ID missing.');
+      return;
+    }
+    try {
+  const result = await this.serviceState.todoListService.addItem(this.editState.name, this.serviceState.entityId, this.editState);
+  // Item added to todo list
+  this.closeDialog();
+    } catch (e: any) {
+      const msg = e?.message || 'Failed to add item';
+      this.banner = BannerMessage.error(msg);
+    }
   }
 
+
   stopScanner() {
-    if (this.stream) {
-      this.stream.getTracks().forEach((t) => t.stop());
-      this.stream = null;
+    if (this.video && this.video.srcObject) {
+      this.video.pause();
+      const stream = this.video.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      this.video.srcObject = null;
     }
-    const video = this.shadowRoot?.querySelector("video");
-    if (video) {
-      video.pause();
-      video.srcObject = null;
-    }
+  }
+
+  // --- Render helpers ---
+
+  private renderVideoView() {
+    return html`
+      <span slot="title">Scan a Barcode</span>
+      <span slot="header"></span>
+      <p>Point camera at barcode</p>
+      <div class="video-container">
+        <video id="video" muted autoplay></video>
+      </div>
+      <span slot="footer">
+        <ha-button type="button" @click=${() => this.closeDialog()}>
+          Close
+        </ha-button>
+      </span>
+    `;
+  }
+
+  private renderBarcodeInfoView() {
+    return html`
+      <span slot="title">Product Details</span>
+  <span slot="header">Detected: ${this.scanState.barcode} (${this.scanState.format})</span>
+ 
+        <div class="scanner-inputs">
+          <ha-textfield
+            label="Name"
+            value=${this.editState.name}
+            @input=${(e: any) => { this.editState = { ...this.editState, name: e.target.value }; this.banner = null; }}
+          ></ha-textfield>
+          <ha-textfield
+            label="Brand"
+            value=${this.editState.brand}
+            @input=${(e: any) => { this.editState = { ...this.editState, brand: e.target.value }; this.banner = null; }}
+          ></ha-textfield>
+        </div>
+
+      <span slot="footer">
+        <ha-button type="button" @click=${() => this._addToList()}>
+          Add to List
+        </ha-button>
+        <ha-button type="button" @click=${() => this.closeDialog()}>
+          Close
+        </ha-button>
+      </span>
+    `;
   }
 
   render() {
-    console.log("[ScannerOverlay] render called, open:", this.open);
+    const isBarcodeDetected = !!this.scanState.barcode;
+    const view = isBarcodeDetected ? this.renderBarcodeInfoView() : this.renderVideoView();
     return html`
-      <sl-dialog-overlay .open=${this.open}>
-        <span slot="title">Scan a Barcode</span>
-        <span slot="header">${this.scanState.barcode ? `Detected: ${this.scanState.barcode} (${this.scanState.format})` : ""}</span>
-        <div>
-          <video id="video" autoplay ?hidden=${!!this.scanState.barcode}></video>
-          <p>
-            ${this.scanState.barcode
-              ? ""
-              : "Point camera at barcode"}
-          </p>
-          ${this.scanState.barcode
-            ? html`
-                <div style="margin-top:16px;">
-                  <label>
-                    Name:<br />
-                    <input
-                      type="text"
-                      .value=${this.editState.name}
-                      @input=${(e: any) => { this.editState = { ...this.editState, name: e.target.value };  }}
-                      style="width:90%;margin-bottom:8px;"
-                    />
-                  </label>
-                  <br />
-                  <label>
-                    Brand:<br />
-                    <input
-                      type="text"
-                      .value=${this.editState.brand}
-                      @input=${(e: any) => { this.editState = { ...this.editState, brand: e.target.value }; }}
-                      style="width:90%;margin-bottom:8px;"
-                    />
-                  </label>
-                </div>
-              `
-            : ""}
-        </div>
-        <span slot="footer">
-          ${this.scanState.barcode
-            ? html`
-                <ha-button type="button" @click=${() => this._addToList()}>
-                  Add to List
-                </ha-button>
-                <ha-button type="button" @click=${() => (this.closeDialog())}>
-                  Close
-                </ha-button>
-              `
-            : html`
-                <ha-button type="button" @click=${() => (this.closeDialog())}>
-                  Close
-                </ha-button>
-              `}
-        </span>
+      <sl-dialog-overlay .open=${this.open} width="400px" minWidth="400px" maxWidth="400px">
+        <sl-message-banner .banner=${this.banner}></sl-message-banner>
+        ${view}
       </sl-dialog-overlay>
     `;
-  }
-  
+  }  
 }
 
 customElements.define("sl-scanner-overlay", BarcodeScannerDialog);

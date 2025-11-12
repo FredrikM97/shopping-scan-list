@@ -9,9 +9,7 @@ import { ProductLookup } from "./services/product-service";
 import { ShoppingListService } from "./services/item-service";
 import "./components/quick-chips-panel";
 import "./components/action-button";
-import "./components/input-panel";
 import "./components/shopping-list-overlay";
-import "./components/manual-device-dialog";
 import "./components/scanner-overlay";
 import type { BarcodeCardConfig, Product } from "./types";
 import { ShoppingListOverlay } from "./components/shopping-list-overlay";
@@ -19,7 +17,9 @@ import { translate } from "./translations/translations";
 import { fireEvent, HA_CARD_REQUIRED_HA_COMPONENTS } from "./common";
 import { BarcodeScannerDialog } from "./components/scanner-overlay";
 import { loadHaComponents } from "@kipk/load-ha-components";
-import { ManualDeviceDialog } from "./components/manual-device-dialog";
+import { AddItemOverlay } from "./components/add-item-overlay";
+import "./components/add-item-overlay";
+import "./components/add-item-panel";
 
 @customElement("barcode-card")
 export class BarcodeCard extends LitElement {
@@ -116,8 +116,8 @@ export class BarcodeCard extends LitElement {
     query?.openDialog();
   }
 
-  private _handleShowManualDeviceDialog() {
-    const query = this.shadowRoot.querySelector<ManualDeviceDialog>("sl-manual-device-dialog")!;
+  private _handleShowAddItemOverlay() {
+    const query = this.shadowRoot.querySelector<AddItemOverlay>("sl-add-item-overlay")!;
     query?.openDialog();
   }
 
@@ -135,10 +135,10 @@ export class BarcodeCard extends LitElement {
           .serviceState="${serviceState}"
         ></sl-scanner-overlay>
         <!-- Manual Device Dialog -->
-        <sl-manual-device-dialog
+        <sl-add-item-overlay
           .todoListService="${this.todoListService}"
           .entityId="${this.config?.entity}"
-        ></sl-manual-device-dialog>
+        ></sl-add-item-overlay>
         <!-- Actions Section -->
 
         <div class="actions-section">
@@ -150,7 +150,7 @@ export class BarcodeCard extends LitElement {
           <sl-action-button
            icon="mdi:plus"
             .label="${translate("actions.add_item")}" 
-            @action-click="${this._handleShowManualDeviceDialog}"
+            @action-click="${this._handleShowAddItemOverlay}"
           ></sl-action-button>
           <sl-action-button
             icon="mdi:format-list-bulleted"
@@ -161,11 +161,12 @@ export class BarcodeCard extends LitElement {
   <div class="section-separator"></div>
 
         <!-- Add Item Panel (handles both manual and barcode input) -->
-        <sl-input-panel
+        <!-- Comented out for now. Might look nicer
+        <sl-add-item-panel
           .entityId="${this.config?.entity}"
           .todoListService="${this.todoListService}"
-        ></sl-input-panel>
-
+        ></sl-add-item-panel>
+        -->
         <!-- Quick Chips Section -->
         <sl-quick-chips-panel
           .entityId="${this.config?.entity}"

@@ -24,6 +24,21 @@ export interface Product {
   source?: string;
 }
 
+
+export class BannerMessage {
+  type: "error" | "success";
+  message: string;
+  constructor(type: "error" | "success", message: string) {
+    this.type = type;
+    this.message = message;
+  }
+  static error(msg: string) {
+    return new BannerMessage("error", msg);
+  }
+  static success(msg: string) {
+    return new BannerMessage("success", msg);
+  }
+}
 export enum ShoppingListStatus {
   NeedsAction = 'needs_action',
   Completed = 'completed',
