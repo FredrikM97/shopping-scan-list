@@ -49,6 +49,14 @@ export class BarcodeScannerDialog extends LitElement {
   };
 
   static styles = css`
+    :host {
+      display: block;
+      background: var(--ha-card-background, var(--card-background-color, #222));
+      color: var(--ha-card-text-color, var(--primary-text-color, #fff));
+      border-radius: var(--ha-card-border-radius, 8px);
+      box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0, 0, 0, 0.15));
+      min-height: 100%;
+    }
     .video-container {
       height: 200px;
       display: flex;
@@ -56,6 +64,7 @@ export class BarcodeScannerDialog extends LitElement {
       justify-content: center;
       margin-left: auto;
       margin-right: auto;
+      background: inherit;
     }
     video {
       width: 100%;
@@ -148,35 +157,68 @@ export class BarcodeScannerDialog extends LitElement {
 
   async startScanner() {
     if (!("BarcodeDetector" in window)) {
-      console.error("BarcodeDetector not supported in this browser");
+      this.banner = BannerMessage.error(
+        "BarcodeDetector not supported in this browser",
+      );
       return;
     }
     await this.updateComplete;
     this.video = this.shadowRoot!.querySelector("video") as HTMLVideoElement;
     if (!this.video) {
-      console.error("Video element not found");
+      this.banner = BannerMessage.error("Video element not found");
       return;
     }
-    this.video.srcObject = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: false,
-    });
+    try {
+      this.video.srcObject = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      });
+    } catch (err: any) {
+      if (
+        err &&
+        (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")
+      ) {
+        this.banner = BannerMessage.error(
+          "Camera permission denied. Please allow camera access in your browser or app settings.",
+        );
+      } else {
+        this.banner = BannerMessage.error(
+          "Camera access failed: " + (err?.message || err),
+        );
+      }
+      return;
+    }
     try {
       await this.video.play();
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+        this.banner = BannerMessage.error(
+          "Camera permission denied. Please allow camera access in your browser or app settings."
+        );
+        return;
+      }
       if (err.name !== "AbortError") {
-        console.error("Video play failed", err);
+        this.banner = BannerMessage.error(
+          "Video play failed: " + (err?.message || err),
+        );
+        return;
       }
     }
-    this.detector = new BarcodeDetector({ formats: SUPPORTED_BARCODE_FORMATS });
+    try {
+      this.detector = new BarcodeDetector({
+        formats: SUPPORTED_BARCODE_FORMATS,
+      });
+    } catch (err) {
+      this.banner = BannerMessage.error(
+        "BarcodeDetector init failed: " + (err?.message || err),
+      );
+      return;
+    }
     this.detectLoop();
   }
 
   private async handleBarcode(barcode: string, format: string) {
     if (await this._handleExistingBarcode(barcode)) {
-      console.log(
-        "[ScannerOverlay] Existing barcode handled, skipping further processing.",
-      );
       return;
     }
 
@@ -195,7 +237,9 @@ export class BarcodeScannerDialog extends LitElement {
         },
       );
     } catch (err) {
-      console.error("Product lookup failed", err);
+      this.banner = BannerMessage.error(
+        "Product lookup failed: " + (err?.message || err),
+      );
     }
     this.stopScanner();
   }
@@ -249,7 +293,9 @@ export class BarcodeScannerDialog extends LitElement {
 
       await this.handleBarcode(rawValue, format);
     } catch (err) {
-      console.error("Barcode detection failed", err);
+      this.banner = BannerMessage.error(
+        "Barcode detection failed: " + (err?.message || err),
+      );
       requestAnimationFrame(this.detectLoop);
     }
   };
@@ -300,7 +346,6 @@ export class BarcodeScannerDialog extends LitElement {
         <ha-button type="button" @click=${() => this.closeDialog()}>
           Close
         </ha-button>
-        <span style="display:block; color: var(--error-color, #f44336); font-size: 0.95em; margin-top: 8px;" id="camera-error"></span>
       </span>
     `;
   }

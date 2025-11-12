@@ -130,12 +130,8 @@ describe("gsc-scanner-overlay", () => {
     const orig = window.BarcodeDetector;
     // @ts-ignore
     delete window.BarcodeDetector;
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     await el.startScanner();
-    expect(errorSpy).toHaveBeenCalledWith(
-      "BarcodeDetector not supported in this browser",
-    );
-    errorSpy.mockRestore();
+    expect(el.banner?.message).toMatch(/BarcodeDetector not supported/);
     window.BarcodeDetector = orig;
   });
 
@@ -144,10 +140,8 @@ describe("gsc-scanner-overlay", () => {
       return { detect: vi.fn() };
     } as any;
     vi.spyOn(el.shadowRoot!, "querySelector").mockReturnValue(null);
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     await el.startScanner();
-    expect(errorSpy).toHaveBeenCalledWith("Video element not found");
-    errorSpy.mockRestore();
+    expect(el.banner?.message).toMatch(/Video element not found/);
   });
 
   it("handles video play fails", async () => {
@@ -167,14 +161,11 @@ describe("gsc-scanner-overlay", () => {
       getTracks: () => [],
     } as any);
     vi.spyOn(video, "play").mockRejectedValue({ name: "NotAllowedError" });
-    await el.startScanner(); // Should not log error for NotAllowedError
+    await el.startScanner(); // Should show permission denied banner
+    expect(el.banner?.message).toMatch(/permission denied/i);
     vi.spyOn(video, "play").mockRejectedValue({ name: "OtherError" });
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     await el.startScanner();
-    expect(errorSpy).toHaveBeenCalledWith("Video play failed", {
-      name: "OtherError",
-    });
-    errorSpy.mockRestore();
+    expect(el.banner?.message).toMatch(/Video play failed/);
   });
 
   it("handles product lookup fails", async () => {
@@ -185,13 +176,8 @@ describe("gsc-scanner-overlay", () => {
         lookupBarcode: vi.fn().mockRejectedValue(new Error("fail")),
       },
     } as any;
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     await (el as any).handleBarcode("123", "EAN");
-    expect(errorSpy).toHaveBeenCalledWith(
-      "Product lookup failed",
-      expect.any(Error),
-    );
-    errorSpy.mockRestore();
+    expect(el.banner?.message).toMatch(/Product lookup failed/);
   });
 
   it("handles barcode detection fails in detectLoop", async () => {

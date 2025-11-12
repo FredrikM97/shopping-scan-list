@@ -16,6 +16,7 @@ This is a plugin for home assistant to scan items with the barcode to add them t
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?repository=grocery-scan-card&owner=FredrikM97&category=plugin)
 
 ## Gallery
+
 <div align="center">
 
   <h3>Card overview</h3>
@@ -30,8 +31,6 @@ This is a plugin for home assistant to scan items with the barcode to add them t
   <img width="886" height="455" alt="image" src="https://github.com/user-attachments/assets/2c536d69-56a8-4a72-8aa1-740785cc6d01" style="margin: 10px 0;" />
 
 </div>
-
-
 
 ## Development
 

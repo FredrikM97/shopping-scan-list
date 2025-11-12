@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
-import { addOpenOnEventListener, fireEvent, HA_CARD_REQUIRED_HA_COMPONENTS } from "../src/common";
+import {
+  addOpenOnEventListener,
+  fireEvent,
+  HA_CARD_REQUIRED_HA_COMPONENTS,
+} from "../src/common";
 
 describe("common utilities", () => {
   it("addOpenOnEventListener sets open property on event", () => {
