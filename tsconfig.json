@@ -20,6 +20,13 @@
     "declaration": false,
     "outDir": "./dist"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "tests/scanner-overlay.test.ts",
+    "tests/quick-chips-panel.test.ts",
+    "tests/message-banner.test.ts",
+    "tests/add-item-panel.test.ts",
+    "tests/add-item-overlay.test.ts"
+  ],
   "exclude": ["node_modules", "dist", "tests", "dev"]
 }

@@ -205,7 +205,6 @@ export class ShoppingListOverlay extends LitElement {
   }
 
   render() {
-    console.log("[ShoppingListOverlay] render called, open:", this.open);
     if (!this.open) {
       return html``;
     }
@@ -246,6 +245,6 @@ export class ShoppingListOverlay extends LitElement {
 }
 declare global {
   interface HTMLElementTagNameMap {
-  "gsc-list-overlay": ShoppingListOverlay;
+    "gsc-list-overlay": ShoppingListOverlay;
   }
 }

@@ -8,8 +8,7 @@ import { translate } from "../translations/translations.js";
 import { BannerMessage } from "../types.js";
 
 export class AddItemOverlay extends LitElement {
-  @property({ type: Object }) todoListService: TodoService | null =
-    null;
+  @property({ type: Object }) todoListService: TodoService | null = null;
   @property({ type: String }) entityId: string = "";
 
   @state() open = false;
@@ -57,12 +56,6 @@ export class AddItemOverlay extends LitElement {
 
   async _addDevice() {
     if (!this.todoListService || !this.entityId || !this.name) {
-      console.log(
-        "AddItemOverlay _addDevice missing info:",
-        this.entityId,
-        this.name,
-        this.todoListService,
-      );
       this.banner = BannerMessage.error(
         "Todo list service, entity ID, and name are required.",
       );
@@ -88,7 +81,6 @@ export class AddItemOverlay extends LitElement {
       this.closeDialog();
     } catch (e: any) {
       const msg = e?.message || "Failed to add item";
-      console.log("AddItemOverlay _addDevice error:", msg);
       this.banner = BannerMessage.error(msg);
     }
   }

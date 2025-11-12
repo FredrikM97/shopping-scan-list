@@ -155,7 +155,7 @@ export class GroceryScanCardEditor extends LitElement {
     const titleInput = this.shadowRoot?.getElementById(
       "title",
     ) as HTMLInputElement;
-  const newConfig: GroceryScanCardConfig = {
+    const newConfig: GroceryScanCardConfig = {
       ...this.config,
       title: titleInput?.value ?? "",
       enable_camera: enableCamera,

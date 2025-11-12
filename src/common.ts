@@ -1,5 +1,3 @@
-import { DEFAULT_HA_COMPONENTS } from "@kipk/load-ha-components";
-
 // Utility to add an event listener that sets an 'open' property to true
 export function addOpenOnEventListener(
   node: HTMLElement,

@@ -3,6 +3,7 @@ import { property, state } from "lit/decorators.js";
 import { BannerMessage } from "../types";
 import "./message-banner";
 import { ProductLookup } from "../services/product-service";
+import { TodoService } from "../services/todo-service";
 import { SUPPORTED_BARCODE_FORMATS } from "../const";
 import "./dialog-overlay";
 
@@ -35,7 +36,12 @@ export class BarcodeScannerDialog extends LitElement {
   @state() apiProduct = null;
   @state() banner: BannerMessage | null = null;
 
-  @property({ type: Object }) serviceState = {
+  @property({ type: Object }) serviceState: {
+    hass: any;
+    todoListService: TodoService | null;
+    entityId: string;
+    productLookup: ProductLookup | null;
+  } = {
     hass: null,
     todoListService: null,
     entityId: "",
@@ -115,15 +121,6 @@ export class BarcodeScannerDialog extends LitElement {
 
   async updated(changed: Map<string, unknown>) {
     if (changed.has("serviceState")) {
-      // Defensive: ensure required fields are present
-      if (!this.serviceState.todoListService) {
-        console.error(
-          "[ScannerOverlay] todoListService is null, cannot add item",
-        );
-      }
-      if (!this.serviceState.entityId) {
-        console.error("[ScannerOverlay] entityId is null, cannot add item");
-      }
       if (!this.serviceState.productLookup) {
         this.serviceState.productLookup = new ProductLookup();
       }
@@ -175,6 +172,14 @@ export class BarcodeScannerDialog extends LitElement {
   }
 
   private async handleBarcode(barcode: string, format: string) {
+    if (await this._handleExistingBarcode(barcode)) {
+      console.log(
+        "[ScannerOverlay] Existing barcode handled, skipping further processing.",
+      );
+      return;
+    }
+
+    // Only update scanState if not an existing item
     this.scanState = { barcode, format };
     try {
       await this.serviceState.productLookup.lookupBarcode(
@@ -194,6 +199,35 @@ export class BarcodeScannerDialog extends LitElement {
     this.stopScanner();
   }
 
+  /**
+   * Checks if the barcode already exists in the todo list and handles incrementing if so.
+   * Returns true if the barcode was handled (existing), false otherwise.
+   */
+  private async _handleExistingBarcode(barcode: string): Promise<boolean> {
+    const items =
+      (await this.serviceState.todoListService.getItems(
+        this.serviceState.entityId,
+      )) || [];
+    if (Array.isArray(items)) {
+      const existing = items.find((item: any) => item.barcode === barcode);
+      if (existing) {
+        // Assign name, brand, and entityId from the existing item before incrementing
+        this.editState = {
+          name: existing.name,
+          brand: existing.brand || "",
+          barcode: existing.barcode,
+        };
+        console.log(
+          "[ScannerOverlay] Existing barcode found, incrementing item:",
+          existing,
+        );
+        await this._addToList();
+        return true;
+      }
+    }
+    return false;
+  }
+
   private detectLoop = async () => {
     if (!this.open || !this.detector) return;
     try {
@@ -211,6 +245,7 @@ export class BarcodeScannerDialog extends LitElement {
         requestAnimationFrame(this.detectLoop);
         return;
       }
+
       await this.handleBarcode(rawValue, format);
     } catch (err) {
       console.error("Barcode detection failed", err);
@@ -317,7 +352,7 @@ export class BarcodeScannerDialog extends LitElement {
         minWidth="400px"
         maxWidth="400px"
       >
-  <gsc-message-banner .banner=${this.banner}></gsc-message-banner>
+        <gsc-message-banner .banner=${this.banner}></gsc-message-banner>
         ${view}
       </gsc-dialog-overlay>
     `;

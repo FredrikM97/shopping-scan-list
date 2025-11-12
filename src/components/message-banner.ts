@@ -44,4 +44,3 @@ declare global {
     "gsc-message-banner": GscMessageBanner;
   }
 }
-// File renamed from gsc-message-banner.ts to message-banner.ts

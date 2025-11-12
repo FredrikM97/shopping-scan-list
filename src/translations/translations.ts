@@ -1,11 +1,15 @@
 import en from "./en.json";
 import sv from "./sv.json";
 
-const translations: Record<string, any> = { en, sv };
-let currentLang = "en";
+export const translationsStore = {
+  translations: { en, sv } as Record<string, any>,
+  currentLang: "en",
+};
 
 export function setLanguage(lang: string) {
-  currentLang = translations[lang] ? lang : "en";
+  translationsStore.currentLang = translationsStore.translations[lang]
+    ? lang
+    : "en";
 }
 
 export function translate(key: string, vars?: Record<string, any>): string {
@@ -14,8 +18,11 @@ export function translate(key: string, vars?: Record<string, any>): string {
     return path.split(".").reduce((acc, part) => acc && acc[part], obj);
   }
   let str =
-    getNested(translations[currentLang], key) ||
-    getNested(translations["en"], key) ||
+    getNested(
+      translationsStore.translations[translationsStore.currentLang],
+      key,
+    ) ||
+    getNested(translationsStore.translations["en"], key) ||
     key;
   if (vars && typeof str === "string") {
     for (const [k, v] of Object.entries(vars)) {

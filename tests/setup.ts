@@ -1,3 +1,11 @@
+// Mock ResizeObserver for jsdom (Vitest)
+if (typeof globalThis.ResizeObserver === "undefined") {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
 // Setup file for Vitest: ensure jsdom globals and mock localStorage
 
 // vitest with environment jsdom should provide window/document, but ensure fallbacks

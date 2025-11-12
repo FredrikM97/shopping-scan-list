@@ -135,15 +135,22 @@ class ProductLookup {
   _loadCache() {
     if (!this.cacheProducts) return;
 
+    let cacheStr = null;
     try {
-      const cached = localStorage.getItem(this.cacheKey);
-      if (cached) {
-        const cacheData = JSON.parse(cached);
-        this.cache = new Map(Object.entries(cacheData));
+      if (typeof localStorage !== "undefined" && localStorage.getItem) {
+        cacheStr = localStorage.getItem(this.cacheKey);
       }
-    } catch (error) {
-      console.warn("Failed to load cache:", error);
-      this.cache = new Map();
+    } catch (e) {
+      // Ignore localStorage errors (test env, SSR, etc)
+      cacheStr = null;
+    }
+    if (cacheStr) {
+      try {
+        const obj = JSON.parse(cacheStr);
+        this.cache = new Map(Object.entries(obj));
+      } catch (e) {
+        // Ignore parse errors
+      }
     }
   }
 

@@ -7,10 +7,10 @@ import "./components/quick-chips-panel";
 import "./components/action-button";
 import "./components/shopping-list-overlay";
 import "./components/scanner-overlay";
-import type { GroceryScanCardConfig  } from "./types";
+import type { GroceryScanCardConfig } from "./types";
 import { ShoppingListOverlay } from "./components/shopping-list-overlay";
 import { translate } from "./translations/translations";
-import {  HA_CARD_REQUIRED_HA_COMPONENTS } from "./common";
+import { HA_CARD_REQUIRED_HA_COMPONENTS } from "./common";
 import { BarcodeScannerDialog } from "./components/scanner-overlay";
 import { loadHaComponents } from "@kipk/load-ha-components";
 import { AddItemOverlay } from "./components/add-item-overlay";
@@ -108,16 +108,14 @@ export class GroceryScanCard extends LitElement {
   }
 
   private _handleShowShoppingListOverlay() {
-    const query = this.shadowRoot.querySelector<ShoppingListOverlay>(
-      "gsc-list-overlay",
-    )!;
+    const query =
+      this.shadowRoot.querySelector<ShoppingListOverlay>("gsc-list-overlay")!;
     query?.openDialog();
   }
   private _handleShowScannerOverlay() {
-    const query =
-      this.shadowRoot.querySelector<BarcodeScannerDialog>(
-        "gsc-scanner-overlay",
-      )!;
+    const query = this.shadowRoot.querySelector<BarcodeScannerDialog>(
+      "gsc-scanner-overlay",
+    )!;
     query?.openDialog();
   }
 

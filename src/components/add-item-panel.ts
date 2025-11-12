@@ -83,7 +83,7 @@ export class AddItemPanel extends LitElement {
   render() {
     return html`
       <div class="add-item-panel">
-  <gsc-message-banner .banner=${this.banner}></gsc-message-banner>
+        <gsc-message-banner .banner=${this.banner}></gsc-message-banner>
         <div class="input-container">
           <ha-textfield
             label="${translate("shopping_list.add_item") ?? "Add item"}"
